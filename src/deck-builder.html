@@ -1,13 +1,3 @@
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
@@ -17,17 +7,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="my-icons.html">
 
-<link rel="lazy-import" href="my-view1.html">
-<link rel="lazy-import" href="my-view2.html">
-<link rel="lazy-import" href="my-view3.html">
-<link rel="lazy-import" href="my-view404.html">
+<link rel="import" href="deck-editor.html">
+<link rel="import" href="deck-preview.html">
+<link rel="lazy-import" href="error-404.html">
 
-<dom-module id="my-app">
+<!--Dialong Boxes-->
+<link rel="import" href="add-card-text.html">
+
+<!--Deck Manager Backend-->
+<link rel="import" href="deck-manager.html">
+
+
+<dom-module id="deck-builder">
   <template>
     <style>
       :host {
@@ -80,39 +77,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="[[rootPath]]view1">View One</a>
-          <a name="view2" href="[[rootPath]]view2">View Two</a>
-          <a name="view3" href="[[rootPath]]view3">View Three</a>
+          <a name="deck-editor" href="[[rootPath]]deck-editor">Deck Editor</a>
+                    <a name="deck-preview" href="[[rootPath]]deck-preview">Deck Preview</a>
         </iron-selector>
       </app-drawer>
-
+      
       <!-- Main content -->
       <app-header-layout has-scrolling-region>
 
         <app-header slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
             <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
+            <div main-title>Ulitmate Deck Builder</div>
+            <paper-icon-button icon="file-upload" on-tap="_showAddCardText"></paper-icon-button>
+            <paper-icon-button icon="file-download" on-tap=""></paper-icon-button>
+            <paper-icon-button icon="clear" on-tap="_clearAllDecks"></paper-icon-button>
           </app-toolbar>
         </app-header>
 
         <iron-pages
             selected="[[page]]"
             attr-for-selected="name"
-            fallback-selection="view404"
+            fallback-selection="error-404"
             role="main">
-          <my-view1 name="view1"></my-view1>
-          <my-view2 name="view2"></my-view2>
-          <my-view3 name="view3"></my-view3>
-          <my-view404 name="view404"></my-view404>
+          <deck-editor name="deck-editor"></deck-editor>
+          <deck-preview name="deck-preview"></deck-preview>
+          <error-404 name="error-404"></error-404>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
+
+    <!--Diaglogs-->
+    <add-card-text></add-card-text>
+
+    <!--Backend-->
+    <deck-manager></deck-manager>
   </template>
 
   <script>
-    class MyApp extends Polymer.Element {
-      static get is() { return 'my-app'; }
+    class DeckBuilder extends Polymer.Element {
+      static get is() { return 'deck-builder'; }
 
       static get properties() {
         return {
@@ -138,7 +142,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _routePageChanged(page) {
         // If no page was found in the route data, page will be an empty string.
         // Deault to 'view1' in that case.
-        this.page = page || 'view1';
+        this.page = page || 'deck-editor';
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {
@@ -148,7 +152,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _pageChanged(page) {
         // Load page import on demand. Show 404 page if fails
-        var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        var resolvedPageUrl = this.resolveUrl(page + '.html');
         Polymer.importHref(
             resolvedPageUrl,
             null,
@@ -157,10 +161,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       _showPage404() {
-        this.page = 'view404';
+        this.page = 'error-404';
+      }
+
+      _showAddCardText() {
+        document.dispatchEvent(new CustomEvent('show-add-card-text'));
+      }
+      
+      _clearAllDecks() {
+        document.dispatchEvent(new CustomEvent('clear-all-decks'));
       }
     }
 
-    window.customElements.define(MyApp.is, MyApp);
+    window.customElements.define(DeckBuilder.is, DeckBuilder);
   </script>
 </dom-module>

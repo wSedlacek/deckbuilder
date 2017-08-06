@@ -1,0 +1,119 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="add-card-text">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+      :host > ::slotted(*) {
+        margin-top: 0px; 
+      }
+      paper-dialog {
+        max-width: 90%;
+      }
+      .buttons {
+        display: flex;
+      }
+    </style>
+    <paper-dialog entry-animation="scale-up-animation" exit-animation="fade-out-animation" id="addText">
+      <h2>Please paste the deck you wish to hijack...</h2>
+      <paper-input type="file" id="ydkpicker" accepted="*.ydk" on-change="load">YDK</paper-input>
+      <paper-textarea rows="10" max-rows="10" value="{{cardsToAdd}}"></paper-textarea>
+      <div class="buttons">
+        <paper-button on-tap="cancel">Cancel</paper-button>
+        <paper-button on-tap="submit">Steal!</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    class AddCardText extends Polymer.Element {
+      static get is() { return 'add-card-text'; }
+      static get properties() {
+        return {
+          cardsToAdd: {
+            type: String,
+            value: ''
+          }
+        };
+      }
+      ready() {
+        super.ready();
+        document.addEventListener('show-add-card-text', e => this.show(e));
+        document.addEventListener('read-ydk', e => this.readYDK(e));
+      }
+
+      show(e) {
+        var dialog = this.$.addText;
+        if (dialog) {
+          dialog.open();
+        }
+      }
+      hide(e) {
+        var dialog = this.$.addText;
+        if (dialog) {
+          dialog.close();
+        }
+        this.cardsToAdd = "";
+      }
+      cancel(e) {
+        this.hide(e);
+      }
+
+      load(e) {
+        if(!window.FileReader) return; // Browser is not compatible
+        var reader = new FileReader();
+        var ydkpicker = this.$.ydkpicker.inputElement.inputElement;
+        if (ydkpicker.files[0]) {
+          reader.onload = function(e) {
+            if(e.target.readyState != 2) return;
+            if(e.target.error) {
+                alert('Error while reading file');
+                return;
+            }
+            var lines = e.target.result.split('\n');
+            var flitered = ""; 
+            for(var i = 0;i < lines.length;i++){
+              var line = lines[i].replace(/,\s*$/, "");
+              var filter = false;
+              if (line.indexOf("#created") == 0) filter = true;
+              flitered = filter ? flitered : flitered + line + "\n";
+            }
+            document.dispatchEvent(new CustomEvent('read-ydk', {detail: {ydk: flitered}}));
+          };
+          reader.readAsText(ydkpicker.files[0]);
+        }
+      }
+
+      readYDK(e) {
+        this.cardsToAdd = e.detail.ydk;
+      }
+
+      submit(e) {
+        var lines = this.cardsToAdd.split('\n');
+        this.hide(e);
+        var deck = "main";
+        for(var i = 0;i < lines.length;i++){
+          var line = lines[i].replace(/,\s*$/, "");
+          if (line == "#main") deck = "main";
+          else if (line == "#extra") deck = "extra";
+          else if (line == "!side") deck = "side";
+          else document.dispatchEvent(new CustomEvent('create-card', {detail: {card: line, deck: deck}}));
+        }
+      }
+    }
+    
+    window.customElements.define(AddCardText.is, AddCardText);
+  </script>
+</dom-module>

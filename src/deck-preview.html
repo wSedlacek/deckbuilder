@@ -1,0 +1,79 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="deck-preview">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+    </style>
+    <div class="card" id="main"  style="height: 288px;"></div>
+    <div class="card" id="extra" style="height: 84px;" ></div>
+    <div class="card" id="side"  style="height: 84px;" ></div>
+  </template>
+
+  <script>
+    class DeckPreview extends Polymer.Element {
+      static get is() { return 'deck-preview'; }
+      static get properties() {
+        return {
+          imgUrl: {
+            type: String,
+            value: "https://raw.githubusercontent.com/shadowfox87/AnimeStylePics/master/"
+          },
+          imgExt: {
+            type: String,
+            value: ".png"
+          }
+        };
+      }
+      ready() {
+        super.ready();
+        document.addEventListener('draw-card', e => this.drawCard(e));
+        document.addEventListener('remove-card', e => this.removeCard(e));
+      }
+
+      clearDeck(e) {
+        var targetdeck = this.getDeck(e.detail.deck);
+        while (targetdeck.firstChild) {
+            targetdeck.removeChild(targetdeck.firstChild);
+        }
+      }
+      
+      drawCard(e) {
+        var targetdeck = this.getDeck(e.detail.deck);
+        var src = this.imgUrl + e.detail.card.ids[0] + this.imgExt;
+        var img = document.createElement('img');
+        img.src = src;
+        img.style.width  = "44px";
+        img.style.height = "64px";
+        img.id = e.detail.card.name;
+        targetdeck.appendChild(img);
+      }
+
+      getDeck(deck) {
+        switch (deck) {
+          case "main":  return this.$.main;  break;
+          case "extra": return this.$.extra; break;
+          case "side":  return this.$.side;  break;
+          default:      return null;
+        }
+      }
+
+      removeCard(e) {
+        var targetdeck = this.getDeck(e.detail.card.deck);
+        var cards = [].slice.call(targetdeck.children);
+        for (var i = 0; i < cards.length; i++) {
+          if (e.detail.card.name == cards[i].id) {
+            targetdeck.removeChild(cards[i]);
+            break;
+          }
+        }
+      }
+    }
+
+    window.customElements.define(DeckPreview.is, DeckPreview);
+  </script>
+</dom-module>

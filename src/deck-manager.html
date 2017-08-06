@@ -1,0 +1,173 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="deck-manager">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+    </style>
+  </template>
+
+  <script>
+    class DeckManager extends Polymer.Element {
+      static get is() { return 'deck-manager'; }
+      
+      static get properties() {
+        return {
+          apiUrl: {
+            type: String,
+            value: "http://ygodb.pe.hu/api/api.php/search?"
+          },
+          mainDeck: {
+            type: Array,
+            value: function () { return []; }
+          },
+          extraDeck: {
+            type: Array,
+            value: function () { return []; }
+          },
+          sideDeck: {
+            type: Array,
+            value: function () { return []; }
+          }
+        };
+      }
+      
+      ready() {
+        super.ready();
+        document.addEventListener('create-card', e => this.createCard(e));
+        document.addEventListener('add-card', e => this.addCard(e));
+        document.addEventListener('remove-card', e => this.removeCard(e));
+        document.addEventListener('clear-card-from-main', e => this.clearCard(e));
+        document.addEventListener('clear-card-from-side', e => this.clearCard(e));
+        document.addEventListener('clear-card-from-extra', e => this.clearCard(e));
+      }
+
+      isID (o) {
+        return ! isNaN (o-0) && o !== null && o !== "" && o !== false;
+      }
+    
+      //Todo: Fix is Name
+      isName (o) {
+        return true;
+      }
+
+      createCard (e) {
+        var isID = this.isID(e.detail.card)
+        var isName = this.isName(e.detail.card);
+
+        var apiSearch = "";
+        if (isID) {
+          apiSearch = "id";
+        } else if (isName) {
+          apiSearch = "name";
+        }
+
+        var url = this.apiUrl + apiSearch + "=" + e.detail.card;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var ygoprodb = {}
+                ygoprodb = JSON.parse(xhr.responseText);
+                document.dispatchEvent(new CustomEvent('add-card', {detail: {card: ygoprodb, deck: e.detail.deck}}));
+            }
+        };
+        xhr.send();
+      }
+
+      addCard(e) {
+        var name = e.detail.card.name;
+        var deck = this.spliceExtraDeck(e.detail.card, e.detail.deck);
+        var pendingDeck = this.getDeck(deck);
+
+        var count = 0;
+        pendingDeck.forEach(function(currentCard) {
+          if (name == currentCard.name) { 
+            count++;
+          }
+        });
+
+        if (count < 3) {
+          if (count == 0) {
+            count++;
+            document.dispatchEvent(new CustomEvent('add-card-to-' + deck, {detail: {card: name}}));
+          } else {
+            count++;
+            document.dispatchEvent(new CustomEvent(deck + '-update-count-' + name, {detail: {count: count}}));
+          }
+          console.log(name + " is being added to " + deck);
+          pendingDeck.push(e.detail.card);
+          document.dispatchEvent(new CustomEvent('draw-card', {detail: {card: e.detail.card, deck: deck}}));
+        } else {
+          window.alert("Hey now! You can only have three of the same card in a deck."); //Placeholder
+        }
+        this.setDeck(deck, pendingDeck);
+      }
+
+      removeCard(e) {
+        var deck = this.spliceExtraDeck(e.detail.card, e.detail.card.deck);
+        var pendingDeck = this.getDeck(deck);
+        var itemToRemove;
+        var BreakException = {};
+        for (var i = 0; i < pendingDeck.length; i++) {
+          if (e.detail.card.name == pendingDeck[i].name) {
+            itemToRemove = i;
+            break;
+          }
+        }
+        
+        console.log(pendingDeck[itemToRemove].name + " is being removed from " + deck);
+        pendingDeck.splice(itemToRemove, 1);
+
+        this.setDeck(deck, pendingDeck);
+      }
+
+      clearCard(e) {
+        for (var i = 0; i < e.detail.card.count; i++) {
+          document.dispatchEvent(new CustomEvent('remove-card', {detail: {card: e.detail.card}}));
+        }
+      }
+
+      isExtraDeckMonster(card) {
+        if (card.allTypes) { 
+          for (var i = 0; i < card.allTypes.length; i++) {
+            if (card.allTypes[i] == "Fusion" || card.allTypes[i] == "Link" || card.allTypes[i] == "Synchro" || card.allTypes[i] == "Xyz") return true;
+          }
+        }
+        return false;
+      }
+
+      spliceExtraDeck(card, deck) {
+        if (this.isExtraDeckMonster(card) && deck == "main") {
+          return "extra";
+        } else {
+          return deck;
+        }
+      }
+
+      getDeck(deck) {
+        switch (deck) {
+          case "main":  return this.mainDeck;  break;
+          case "extra": return this.extraDeck; break;
+          case "side":  return this.sideDeck;  break;
+          default:      return this.mainDeck;  break;
+        }
+      }
+
+      setDeck(deck, pendingDeck) {
+        switch (deck) {
+          case "main":  this.mainDeck  = pendingDeck; break;
+          case "extra": this.extraDeck = pendingDeck; break;
+          case "side":  this.sideDeck  = pendingDeck; break;
+          default:      this.mainDeck  = pendingDeck; break;
+        }
+      }
+    }
+    window.customElements.define(DeckManager.is, DeckManager);
+  </script>
+</dom-module>

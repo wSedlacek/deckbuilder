@@ -1,0 +1,59 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="ygo-card.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="ygo-card-list">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+    </style>
+    <div id="cards">
+    </div>
+  </template>
+
+  <script>
+    class YGOCardList extends Polymer.Element {
+      static get is() { return 'ygo-card-list'; }
+      static get properties() {
+        return {
+          deck: {
+            type: String,
+            value: 'main'
+          }
+        };
+      }
+
+      ready() {
+        super.ready();
+        document.addEventListener('add-card-to-' + this.deck, e => this.addCard(e));
+        document.addEventListener('clear-card-from-' + this.deck, e => this.clearCard(e));
+        document.addEventListener('clear-all-decks', e => this.clearAllCards(e));
+      }
+
+      addCard(e) {
+        var cards  = this.$.cards;
+        var card   = document.createElement('ygo-card');
+        card.name  = e.detail.card;
+        card.count = 1;
+        card.deck  = this.deck;
+        cards.appendChild(card);
+      }
+
+      clearCard(e) {
+        var cards = this.$.cards;
+        cards.removeChild(e.detail.card);
+      }
+
+      clearAllCards(e) {
+        var cards  = [].slice.call(this.$.cards.children);
+        cards.forEach(function(card) {
+          card.clearCard(e);
+        });
+      }
+    }
+    window.customElements.define(YGOCardList.is, YGOCardList);
+  </script>
+</dom-module>
