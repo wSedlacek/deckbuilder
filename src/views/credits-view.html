@@ -1,0 +1,24 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../helpers/shared-styles.html">
+<link rel="import" href="../elements/credit-entry.html">
+
+<dom-module id="credits-view">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+    </style>
+    <credit-entry name="wSedlacek" credit="Web Designer" link=""></credit-entry>
+    <credit-entry name="Snrk" credit="API Creator" link=""></credit-entry>
+  </template>
+
+  <script>
+    class CreditsView extends Polymer.Element {
+      static get is() { return 'credits-view'; }
+    }
+
+    window.customElements.define(CreditsView.is, CreditsView);
+  </script>
+</dom-module>

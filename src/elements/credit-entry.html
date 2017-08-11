@@ -4,7 +4,7 @@
 <link rel="import" href="../../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="../helpers/shared-styles.html">
 
-<dom-module id="credit">
+<dom-module id="credit-entry">
   <template>
     <style include="shared-styles">
       :host {
@@ -19,7 +19,7 @@
   </template>
 
   <script>
-    class Credit extends Polymer.Element {
+    class CreditEntry extends Polymer.Element {
       static get properties() {
         return {
           name: {
@@ -36,8 +36,8 @@
           }
         };
       }
-      static get is() { return 'credit'; }
+      static get is() { return 'credit-entry'; }
     }
-    window.customElements.define(Credit.is, Credit);
+    window.customElements.define(CreditEntry.is, CreditEntry);
   </script>
 </dom-module>
