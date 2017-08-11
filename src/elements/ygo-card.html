@@ -1,12 +1,8 @@
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
-<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
-<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
- <link rel="import" href="../bower_components/neon-animation/web-animations.html">
-<link rel="import" href="shared-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../helpers/shared-styles.html">
 
 <dom-module id="ygo-card">
   <template>
@@ -95,8 +91,8 @@
         if (this.count > 1) {
           this.count--;
           document.dispatchEvent(new CustomEvent('remove-card', {detail: {card: this}}));
-          if (this.count == 1) Polymer.dom( this.$.removeCard ).setAttribute('disabled','');
-          if (this.count < 3) Polymer.dom( this.$.addCard ).removeAttribute('disabled');
+          if (this.count == 1) this.$.removeCard.setAttribute('disabled','');
+          if (this.count < 3) this.$.addCard.removeAttribute('disabled');
         }
       }
 
