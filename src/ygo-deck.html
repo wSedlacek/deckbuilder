@@ -2,7 +2,7 @@
 <link rel="import" href="ygo-card.html">
 <link rel="import" href="shared-styles.html">
 
-<dom-module id="ygo-card-list">
+<dom-module id="ygo-deck">
   <template>
     <style include="shared-styles">
       :host {
@@ -15,8 +15,8 @@
   </template>
 
   <script>
-    class YGOCardList extends Polymer.Element {
-      static get is() { return 'ygo-card-list'; }
+    class YGODeck extends Polymer.Element {
+      static get is() { return 'ygo-deck'; }
       static get properties() {
         return {
           deck: {
@@ -54,6 +54,6 @@
         });
       }
     }
-    window.customElements.define(YGOCardList.is, YGOCardList);
+    window.customElements.define(YGODeck.is, YGODeck);
   </script>
 </dom-module>

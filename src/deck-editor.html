@@ -4,7 +4,7 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 
 <link rel="import" href="shared-styles.html">
-<link rel="import" href="ygo-card-list.html">
+<link rel="import" href="ygo-deck.html">
 
 <dom-module id="deck-editor">
   <template>
@@ -57,13 +57,13 @@
       <paper-icon-button id="addCardButton" icon="add" on-tap="_addCard"></paper-icon-button>
     </div>
     <div class="deck" id="main">
-      <ygo-card-list deck="main"></ygo-card-list>
+      <ygo-deck deck="main"></ygo-deck>
     </div>
     <div class="deck" id="extra">
-      <ygo-card-list deck="extra"></ygo-card-list>
+      <ygo-deck deck="extra"></ygo-deck>
     </div>
     <div class="deck" id="side">
-      <ygo-card-list deck="side"></ygo-card-list>
+      <ygo-deck deck="side"></ygo-deck>
     </div>
   </template>
 
