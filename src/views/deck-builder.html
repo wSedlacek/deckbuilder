@@ -16,6 +16,7 @@
 
 <link rel="import" href="deck-editor.html">
 <link rel="import" href="deck-preview.html">
+<link rel="lazy-import" href="credits.html">
 <link rel="lazy-import" href="error-404.html">
 
 <!--Dialong Boxes-->
@@ -79,7 +80,8 @@
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
           <a name="deck-editor" href="[[rootPath]]deck-editor">Deck Editor</a>
-                    <a name="deck-preview" href="[[rootPath]]deck-preview">Deck Preview</a>
+          <a name="deck-preview" href="[[rootPath]]deck-preview">Deck Preview</a>
+          <a name="credits" href="[[rootPath]]credits">Credits</a>          
         </iron-selector>
       </app-drawer>
       
@@ -103,6 +105,7 @@
             role="main">
           <deck-editor name="deck-editor"></deck-editor>
           <deck-preview name="deck-preview"></deck-preview>
+          <credits name="credits"></credits>
           <error-404 name="error-404"></error-404>
         </iron-pages>
       </app-header-layout>
