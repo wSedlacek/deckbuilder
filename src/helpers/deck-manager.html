@@ -44,6 +44,7 @@
         document.addEventListener('clear-card-from-main', e => this.clearCard(e));
         document.addEventListener('clear-card-from-side', e => this.clearCard(e));
         document.addEventListener('clear-card-from-extra', e => this.clearCard(e));
+        document.addEventListener('download-ydk', e => this.downloadYDK(e));
       }
 
       isID (o) {
@@ -143,11 +144,29 @@
       }
 
       spliceExtraDeck(card, deck) {
-        if (this.isExtraDeckMonster(card) && deck == "main") {
-          return "extra";
-        } else {
-          return deck;
+        return this.isExtraDeckMonster(card) && deck == "main" ? "extra": deck;
+      }
+
+      downloadYDK() {
+        alert(this.createYDK());
+      }
+
+      createYDK() {
+        prefix = "#Created by Ultimate Deck Builder\n";
+        return prefix + this.createYDKFor("main") + this.createYDKFor("extra") + this.createYDKFor("side");
+      }
+
+      createYDKFor(deck) {
+        var YDK = "";
+        var targetdeck = this.getDeck(deck);
+        if (targetdeck.length > 0) {
+          var prefix = deck == "side" ? "!" : "#"; 
+          YDK += prefix + deck + "\n"
+          for (var i = 0; i < targetdeck.length; i++) {
+            YDK += targetdeck[i].ids[0] + "\n";
+          }
         }
+        return YDK;
       }
 
       getDeck(deck) {
@@ -168,6 +187,7 @@
         }
       }
     }
+
     window.customElements.define(DeckManager.is, DeckManager);
   </script>
 </dom-module>
