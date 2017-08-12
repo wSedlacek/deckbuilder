@@ -19,26 +19,28 @@
         height: 24px;
         padding: 0px;
       }
-      .clear {
+      .count {
+        vertical-align: middle;
         display: inline-block;
-        width: 25%;;
+        width: 30%;
       }
-      h4 {
+      #name {
+        vertical-align: middle;
         display: inline-block;
         text-align: center;
-        width: 47%;
+        width: 36%;
       }
-      p {
+      .clear {
+        vertical-align: middle;
         display: inline-block;
+        width: 30%;
       }
-      .count {
+      .inline {
         display: inline-block;
-        width: 25%;
       }
       .right-algin {
         text-align: right;
       }
-      
       paper-dropdown-menu {
         display: inline-block;
         margin-left: 5px;
@@ -58,15 +60,18 @@
     </style>
 
     <div class="card" id="card">
-        <div class="clear">
-          <paper-icon-button icon="clear" on-tap="clearCard"></paper-icon-button>
-        </div>
-        <h4>[[name]]</h4>
         <div class="count">
+          <paper-icon-button disabled id="removeCard" icon="remove" on-tap="minusOne"></paper-icon-button>
+          <p class="inline">[[count]]</p>
+          <paper-icon-button id="addCard" icon="add" on-tap="plusOne"></paper-icon-button>
+        </div>
+        <div id="name">
+          <h4 class="inline">[[name]]</h4>        
+        </div>
+        <div class="clear">
           <div class="right-algin">
-            <paper-icon-button disabled id="removeCard" icon="remove" on-tap="minusOne"></paper-icon-button>
-            <p>[[count]]</p>
-            <paper-icon-button id="addCard" icon="add" on-tap="plusOne"></paper-icon-button>
+            <paper-icon-button icon="info-outline" id="type" class="inline"></paper-icon-button>
+            <paper-icon-button icon="clear" on-tap="clearCard"></paper-icon-button>
           </div>
         </div>
     </div>
@@ -91,8 +96,7 @@
           case "Spell":    this.color = "#4CAF50"; break;
           case "Trap":     this.color = "#D81B60"; break;
         }
-        var textColor = this.type == "Synchro" ? "#000000" : "#ffffff"; 
-        this.$.card.setAttribute('style', 'color: '+ textColor + '; background-color: '+ this.color);
+        this.$.name.setAttribute('style', 'color: '+ this.color);
       }
 
       updateCount(e) {
