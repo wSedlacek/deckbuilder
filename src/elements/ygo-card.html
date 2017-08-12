@@ -57,7 +57,7 @@
       }
     </style>
 
-    <div class="card" id="[[name]]">
+    <div class="card" id="card">
         <div class="clear">
           <paper-icon-button icon="clear" on-tap="clearCard"></paper-icon-button>
         </div>
@@ -79,6 +79,20 @@
       ready(){
         super.ready();
         document.addEventListener(this.deck + '-update-count-' + this.name, e => this.updateCount(e));
+        switch (this.type) {
+          case "Normal":   this.color = "#FDD835"; break;
+          case "Effect":   this.color = "#FF8F00"; break;
+          case "Ritual":   this.color = "#039BE5"; break; 
+          case "Fusion":   this.color = "#9C27B0"; break;
+          case "Synchro":  this.color = "#FFFFFF"; break;
+          case "Xyz":      this.color = "#263238"; break;
+          case "Pendulum": this.color = "#43A047"; break;
+          case "Link":     this.color = "#0277BD"; break;
+          case "Spell":    this.color = "#4CAF50"; break;
+          case "Trap":     this.color = "#D81B60"; break;
+        }
+        var textColor = this.type == "Synchro" ? "#000000" : "#ffffff"; 
+        this.$.card.setAttribute('style', 'color: '+ textColor + '; background-color: '+ this.color);
       }
 
       updateCount(e) {
@@ -119,9 +133,17 @@
             type: Number,
             value: '1'
           },
+          color: {
+            type: String,
+            value: '#fff'
+          },
           deck: {
             type: String,
             value: 'main'
+          },
+          type: {
+            type: String,
+            value: 'Unknown'
           }
         };
       }

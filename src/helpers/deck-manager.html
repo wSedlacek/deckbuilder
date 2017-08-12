@@ -95,7 +95,7 @@
         if (count < 3) {
           if (count == 0) {
             count++;
-            document.dispatchEvent(new CustomEvent('add-card-to-' + deck, {detail: {card: name}}));
+            document.dispatchEvent(new CustomEvent('add-card-to-' + deck, {detail: {card: e.detail.card}}));
           } else {
             count++;
             document.dispatchEvent(new CustomEvent(deck + '-update-count-' + name, {detail: {count: count}}));
