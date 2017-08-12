@@ -10,8 +10,20 @@
         display: block;
         padding: 0px;
       }
+      #deck {
+        margin: 10px;
+        min-height: 100px;
+      }
+      #header {
+        text-align: center;
+      }
     </style>
-    <div id="cards">
+    <div id="deck" class="card">
+      <div id="header">
+        <h>[[Deck]] Deck</h>
+        <hr>
+        <h2 id="empty">Empty Deck</h2>
+      </div>
     </div>
   </template>
 
@@ -23,6 +35,10 @@
           deck: {
             type: String,
             value: 'main'
+          },
+          Deck: {
+            type: String,
+            value: 'Main'
           }
         };
       }
@@ -32,26 +48,31 @@
         document.addEventListener('add-card-to-' + this.deck, e => this.addCard(e));
         document.addEventListener('clear-card-from-' + this.deck, e => this.clearCard(e));
         document.addEventListener('clear-all-decks', e => this.clearAllCards(e));
+        this.Deck = this.deck.replace(/\b./g, function(m){ return m.toUpperCase(); });
       }
 
       addCard(e) {
-        var cards  = this.$.cards;
+        this.$.empty.setAttribute('style','display: none;');
+        var deck  = this.$.deck;
         var card   = document.createElement('ygo-card');
         card.name  = e.detail.card;
         card.count = 1;
         card.deck  = this.deck;
-        cards.appendChild(card);
+        deck.appendChild(card);
       }
 
       clearCard(e) {
-        var cards = this.$.cards;
-        cards.removeChild(e.detail.card);
+        var deck = this.$.deck;
+        deck.removeChild(e.detail.card);
+        if ([].slice.call(this.$.deck.children).length <= 1)
+          this.$.empty.setAttribute('style','display: block;');
       }
 
       clearAllCards(e) {
-        var cards  = [].slice.call(this.$.cards.children);
-        cards.forEach(function(card) {
-          card.clearCard(e);
+        var deck  = [].slice.call(this.$.deck.children);
+        var header = deck[0];
+        deck.forEach(function(card) {
+          if (card != header) card.clearCard(e);
         });
       }
     }
