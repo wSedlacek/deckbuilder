@@ -17,13 +17,13 @@
       
       static get properties() {
         return {
+          _addingCard: {
+            type: Boolean,
+            value: false
+          },
           apiUrl: {
             type: String,
             value: "http://ygodb.pe.hu/api/api.php/search?"
-          },
-          downloading: {
-            type: Boolean,
-            value: false
           },
           mainDeck: {
             type: Array,
@@ -59,58 +59,43 @@
       }
 
       createCard(e, reference = this) {
-        if(reference.downloading) {
+        if(reference._addingCard) {
           window.setTimeout(reference.createCard, 10, e, reference);
         } else {
-          reference._createCard(e.detail.card, e.detail.deck);
-        }
-      }
-
-      _createCard(card, deck) {
-        this.downloading = true;
-        var cardClone = this._findCardInDeck(card, deck);
-        if (cardClone != null) {
-          this.addCard(cardClone, deck);
-        } else {
-          var isID = this.isID(card)
-          var isName = this.isName(card);
-          var apiSearch = "";
-          if (isID) {
-            apiSearch = "id";
-          } else if (isName) {
-            apiSearch = "name";
-          }
-
-          var url = this.apiUrl + apiSearch + "=" + card;
-          var xhr = new XMLHttpRequest();
-          var reference = this;
-          xhr.open("GET", url, true);
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-              var ygoprodb = JSON.parse(xhr.responseText);
-              reference.addCard(ygoprodb, deck);
-            } else {
-              reference.downloading = false;
+          reference._addingCard = true;
+          var lookup = e.detail.card;
+          var deck = e.detail.deck;
+          var cardClone = reference._findCardInDeck(lookup, deck);
+          if (cardClone != null) {
+            reference._addCard(cardClone, deck);
+            reference._addingCard = false;
+          } else {
+            var apiSearch = "";
+            if (reference.isID(lookup)) {
+              apiSearch = "id";
+            } else if (reference.isName(lookup)) {
+              apiSearch = "name";
             }
-          };
 
-          xhr.send();
-        }
-      }
+            var url = reference.apiUrl + apiSearch + "=" + lookup;
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function () {
+              if (xhr.readyState == 4 && xhr.status == 200) {
+                var card = JSON.parse(xhr.responseText);
+                reference._addCard(card, deck);
+                reference._addingCard = false;
+              } else {
+                reference._addingCard = false;
+              }
+            };
 
-      _findCardInDeck(card, deck) {
-        var deck = this.spliceExtraDeck(card, deck);
-        var pendingDeck = this._getDeck(deck);
-        for (var i = 0; i < pendingDeck.length; i++) {
-          for (var j = 0; j < pendingDeck[i].ids.length; j++) {
-            if (card == pendingDeck[i].name || card == pendingDeck[i].ids[j]) {
-              return pendingDeck[i];
-            }
+            xhr.send();
           }
         }
       }
 
-      addCard(card, deck) {
+      _addCard(card, deck) {
         var name = card.name;
         var deck = this.spliceExtraDeck(card, deck);
         var pendingDeck = this._getDeck(deck);
@@ -137,7 +122,18 @@
           window.alert("Hey now! You can only have three of the same card in a deck."); //Placeholder
         }
         this._setDeck(deck, pendingDeck);
-        this.downloading = false;
+      }
+
+      _findCardInDeck(card, deck) {
+        var deck = this.spliceExtraDeck(card, deck);
+        var pendingDeck = this._getDeck(deck);
+        for (var i = 0; i < pendingDeck.length; i++) {
+          for (var j = 0; j < pendingDeck[i].ids.length; j++) {
+            if (card == pendingDeck[i].name || card == pendingDeck[i].ids[j]) {
+              return pendingDeck[i];
+            }
+          }
+        }
       }
 
       removeCard(e) {
