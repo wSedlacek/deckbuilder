@@ -12,8 +12,6 @@
 <link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
-<link rel="import" href="../helpers/my-icons.html">
-
 <link rel="import" href="deck-editor.html">
 <link rel="import" href="deck-preview.html">
 <link rel="lazy-import" href="web-credits.html">
@@ -90,8 +88,9 @@
 
         <app-header slot="header" condenses reveals effects="waterfall">
           <app-toolbar>
-            <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
-            <div main-title>Ulitmate Deck Builder</div>
+            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+            <paper-icon-button icon="create" on-tap="_editeDeckName"></paper-icon-button> 
+            <div main-title>{{deckname}}</div>
             <paper-icon-button icon="file-upload" on-tap="_showAddCardText"></paper-icon-button>
             <paper-icon-button icon="file-download" on-tap="_downloadYDK"></paper-icon-button>
             <paper-icon-button icon="clear" on-tap="_clearAllDecks"></paper-icon-button>
@@ -129,11 +128,15 @@
             reflectToAttribute: true,
             observer: '_pageChanged',
           },
+          deckname: {
+            type: String,
+            value: 'Untitled'
+          },
           routeData: Object,
           subroute: String,
           // This shouldn't be neccessary, but the Analyzer isn't picking up
           // Polymer.Element#rootPath
-          rootPath: String,
+          rootPath: String
         };
       }
 
@@ -176,7 +179,7 @@
         document.dispatchEvent(new CustomEvent('clear-all-decks'));
       }
       _downloadYDK() {
-        document.dispatchEvent(new CustomEvent('download-ydk'));
+        document.dispatchEvent(new CustomEvent('download-ydk', {detail: {deckname: this.deckname}}));
       }
     }
 

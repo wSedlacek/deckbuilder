@@ -147,12 +147,22 @@
         return this.isExtraDeckMonster(card) && deck == "main" ? "extra": deck;
       }
 
-      downloadYDK() {
-        alert(this.createYDK());
+      downloadYDK(e) {
+        var textToSave = this.createYDK();
+        var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+        var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+        var fileNameToSaveAs = e.detail.deckname + ".ydk";
+    
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.href = textToSaveAsURL;
+        downloadLink.style.display = "none";
+
+        downloadLink.click();
       }
 
       createYDK() {
-        prefix = "#Created by Ultimate Deck Builder\n";
+        var prefix = "#Created by Ultimate Deck Builder\n";
         return prefix + this.createYDKFor("main") + this.createYDKFor("extra") + this.createYDKFor("side");
       }
 
