@@ -1,0 +1,90 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+
+
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+
+<link rel="import" href="../helpers/shared-styles.html">
+
+<dom-module id="processing-data">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+      :host > ::slotted(*) {
+        margin-top: 0px;
+      }
+      paper-dialog {
+        max-width: 90%;
+      }
+      paper-spinner {
+        vertical-align: middle;
+      }
+      .inline {
+        display: inline-block;
+      }
+      #container {
+      }
+      #text {
+        padding-left: 10px;
+        text-align: center;
+      }
+    </style>
+    <paper-dialog entry-animation="scale-up-animation"
+                  exit-animation="fade-out-animation"
+                  with-backdrop opened="{{opened}}"
+                  modal>
+      <div id="container" class="inline">
+        <paper-spinner class="multi" active></paper-spinner>
+        <h id="text" class="inline">Processing</h>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    class ProcessingData extends Polymer.Element {
+      static get is() { return 'processing-data'; }
+      static get properties() {
+        return {
+          cardsToAdd: {
+            type: String,
+            value: ''
+          }, 
+          deckName: {
+            type: String,
+            value: ''
+          },
+          opened: {
+            type: Boolean,
+            value: false,
+            observer: '_updateBlurOveraly'
+          }
+        };
+      }
+      ready() {
+        super.ready();
+        document.addEventListener('show-processing-data', e => this.show(e));
+        document.addEventListener('hide-processing-data', e => this.hide(e));
+      }
+
+      _updateBlurOveraly(e) {
+        document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: this.opened}}));
+      }
+
+
+      show(e) {
+        this.opened = true;
+      }
+      hide(e) {
+        this.opened = false;
+      }
+    }
+    
+    window.customElements.define(ProcessingData.is, ProcessingData);
+  </script>
+</dom-module>

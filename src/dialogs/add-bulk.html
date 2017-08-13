@@ -46,8 +46,7 @@
     </style>
     <paper-dialog entry-animation="scale-up-animation"
                   exit-animation="fade-out-animation"
-                  id="addBulk" with-backdrop
-                  opened="{{opened}}">
+                   with-backdrop opened="{{opened}}">
       <div id="header">
         <paper-tabs selected="{{selected}}" scrollable fit-container>
           <paper-tab>Text</paper-tab>
@@ -160,6 +159,7 @@
       _submit(e) {
         var lines = this.cardsToAdd.split('\n');
         this.hide(e);
+        document.dispatchEvent(new CustomEvent('show-processing-data'));
         var deck = "main";
         for(var i = 0;i < lines.length;i++) {
           var line = lines[i].replace(/,\s*$/, "");
