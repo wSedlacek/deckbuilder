@@ -3,13 +3,15 @@
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+
 <link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../../bower_components/neon-animation/web-animations.html">
 
 <link rel="import" href="../helpers/shared-styles.html">
 
-<dom-module id="add-card-text">
+<dom-module id="add-bulk">
   <template>
     <style include="shared-styles">
       :host {
@@ -21,61 +23,110 @@
       }
       paper-dialog {
         max-width: 90%;
+        width: 600px;
       }
       .buttons {
         display: flex;
       }
+      paper-tabs {
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 100%;
+        text-transform: uppercase;
+        margin-bottom: 1px;
+        margin: 0;
+      }
+      #header{
+        display: flex;
+        margin: 0px;
+        align-items: flex-end;
+        background: #4285f4;
+        color: white;
+      }
     </style>
-    <paper-dialog entry-animation="scale-up-animation" exit-animation="fade-out-animation" id="addText">
-      <h2>Please paste the deck you wish to hijack...</h2>
-      <paper-input type="file" id="ydkpicker" accepted="*.ydk" on-change="load">YDK</paper-input>
-      <paper-textarea rows="10" max-rows="10" value="{{cardsToAdd}}"></paper-textarea>
-      <div class="buttons">
+    <paper-dialog entry-animation="scale-up-animation" exit-animation="fade-out-animation" id="addBulk">
+      <div id="header">
+        <paper-tabs selected="{{selected}}" scrollable fit-container>
+          <paper-tab>Text</paper-tab>
+          <paper-tab>File</paper-tab>
+        </paper-tabs>
+      </div>
+      <div id="text">
+        <paper-input always-float-label label="Name of Deck" value="{{deckName}}"></paper-input>
+        <paper-textarea always-float-label label="Card Names or Card IDs"rows="10" max-rows="10" value="{{cardsToAdd}}"></paper-textarea>
+      </div>
+      <div id="file" style="display: none;">
+        <paper-input readOnly always-float-label label="YDK File" on-tap="_triggerFilePicker" value="{{deckName}}"></paper-input>
+        <paper-input style="display: none;" type="file" id="ydkpicker" accepted="*.ydk" on-change="load"></paper-input>
+      </div>
+      <div id="buttons" class="buttons">
         <paper-button on-tap="cancel">Cancel</paper-button>
-        <paper-button on-tap="submit">Steal!</paper-button>
+        <paper-button on-tap="submit">Upload</paper-button>
       </div>
     </paper-dialog>
   </template>
 
   <script>
-    class AddCardText extends Polymer.Element {
-      static get is() { return 'add-card-text'; }
+    class AddBulk extends Polymer.Element {
+      static get is() { return 'add-bulk'; }
       static get properties() {
         return {
           cardsToAdd: {
             type: String,
             value: ''
+          }, 
+          deckName: {
+            type: String,
+            value: ''
+          },
+          selected: {
+            type: Number,
+            value: 0,
+            observer: '_selectTab'
           }
         };
       }
       ready() {
         super.ready();
-        document.addEventListener('show-add-card-text', e => this.show(e));
+        document.addEventListener('show-add-bulk', e => this.show(e));
         document.addEventListener('read-ydk', e => this.readYDK(e));
       }
 
       show(e) {
-        var dialog = this.$.addText;
-        if (dialog) {
-          dialog.open();
-        }
+        var dialog = this.$.addBulk;
+        if (!dialog) return
+        this.cardsToAdd = "";
+        this.deckName = "";
+        this.selected = 0;
+        dialog.open();
+        document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: true}}));
       }
       hide(e) {
-        var dialog = this.$.addText;
-        if (dialog) {
-          dialog.close();
-        }
-        this.cardsToAdd = "";
+        var dialog = this.$.addBulk;
+        if (!dialog) return;
+        dialog.close();
+        document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: false}}));
       }
       cancel(e) {
         this.hide(e);
       }
 
+      _selectTab(e) {
+        this.$.text.setAttribute('style', this.selected == 0 ? 'display: block;' : 'display: none;');
+        this.$.file.setAttribute('style', this.selected == 1 ? 'display: block;' : 'display: none;');
+      }
+      
+      _triggerFilePicker(e) {
+        this.$.ydkpicker.inputElement.inputElement.click();
+      }
       load(e) {
         if(!window.FileReader) return; // Browser is not compatible
         var reader = new FileReader();
         var ydkpicker = this.$.ydkpicker.inputElement.inputElement;
         if (ydkpicker.files[0]) {
+          this.deckName = this.$.ydkpicker.inputElement.inputElement.value
+            .replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "");
+          
           reader.onload = function(e) {
             if(e.target.readyState != 2) return;
             if(e.target.error) {
@@ -114,6 +165,6 @@
       }
     }
     
-    window.customElements.define(AddCardText.is, AddCardText);
+    window.customElements.define(AddBulk.is, AddBulk);
   </script>
 </dom-module>

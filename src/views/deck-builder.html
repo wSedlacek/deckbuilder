@@ -18,7 +18,7 @@
 <link rel="lazy-import" href="error-404.html">
 
 <!--Dialong Boxes-->
-<link rel="import" href="../dialogs/add-card-text.html">
+<link rel="import" href="../dialogs/add-bulk.html">
 
 <!--Deck Manager Backend-->
 <link rel="import" href="../helpers/deck-manager.html">
@@ -58,61 +58,67 @@
         color: var(--app-secondary-color);
         line-height: 40px;
       }
-
       .drawer-list a.iron-selected {
         color: black;
         font-weight: bold;
       }
+      #overlay{
+        position:fixed;
+        width:100%;
+        height:100%;
+        top:0;
+        left:0;
+      }
     </style>
+    <div id="overlay">
+      <app-location route="{{route}}" url-space-regex="^[[rootPath]]"></app-location>
+      <app-route
+          route="{{route}}"
+          pattern="[[rootPath]]:page"
+          data="{{routeData}}"
+          tail="{{subroute}}"></app-route>
 
-    <app-location route="{{route}}" url-space-regex="^[[rootPath]]"></app-location>
-    <app-route
-        route="{{route}}"
-        pattern="[[rootPath]]:page"
-        data="{{routeData}}"
-        tail="{{subroute}}"></app-route>
+      <app-drawer-layout fullbleed narrow="{{narrow}}">
+        <!-- Drawer content -->
+        <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
+          <app-toolbar>Menu</app-toolbar>
+          <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+            <a name="deck-editor" href="[[rootPath]]deck-editor">Deck Editor</a>
+            <a name="deck-preview" href="[[rootPath]]deck-preview">Deck Preview</a>
+            <a name="web-credits" href="[[rootPath]]web-credits">Credits</a>          
+          </iron-selector>
+        </app-drawer>
+        
+        <!-- Main content -->
+        <app-header-layout has-scrolling-region>
 
-    <app-drawer-layout fullbleed narrow="{{narrow}}">
-      <!-- Drawer content -->
-      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
-        <app-toolbar>Menu</app-toolbar>
-        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="deck-editor" href="[[rootPath]]deck-editor">Deck Editor</a>
-          <a name="deck-preview" href="[[rootPath]]deck-preview">Deck Preview</a>
-          <a name="web-credits" href="[[rootPath]]web-credits">Credits</a>          
-        </iron-selector>
-      </app-drawer>
-      
-      <!-- Main content -->
-      <app-header-layout has-scrolling-region>
+          <app-header slot="header" condenses reveals effects="waterfall">
+            <app-toolbar>
+              <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+              <paper-icon-button icon="create" on-tap="_editeDeckName"></paper-icon-button> 
+              <div main-title>{{deckname}}</div>
+              <paper-icon-button icon="file-upload" on-tap="_showAddCardText"></paper-icon-button>
+              <paper-icon-button icon="file-download" on-tap="_downloadYDK"></paper-icon-button>
+              <paper-icon-button icon="clear" on-tap="_clearAllDecks"></paper-icon-button>
+            </app-toolbar>
+          </app-header>
 
-        <app-header slot="header" condenses reveals effects="waterfall">
-          <app-toolbar>
-            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-            <paper-icon-button icon="create" on-tap="_editeDeckName"></paper-icon-button> 
-            <div main-title>{{deckname}}</div>
-            <paper-icon-button icon="file-upload" on-tap="_showAddCardText"></paper-icon-button>
-            <paper-icon-button icon="file-download" on-tap="_downloadYDK"></paper-icon-button>
-            <paper-icon-button icon="clear" on-tap="_clearAllDecks"></paper-icon-button>
-          </app-toolbar>
-        </app-header>
-
-        <iron-pages
-            selected="[[page]]"
-            attr-for-selected="name"
-            fallback-selection="error-404"
-            role="main">
-          <deck-editor name="deck-editor"></deck-editor>
-          <deck-preview name="deck-preview"></deck-preview>
-          <web-credits name="web-credits"></web-credits>
-          <error-404 name="error-404"></error-404>
-        </iron-pages>
-      </app-header-layout>
-    </app-drawer-layout>
-
+          <iron-pages
+              selected="[[page]]"
+              attr-for-selected="name"
+              fallback-selection="error-404"
+              role="main">
+            <deck-editor name="deck-editor"></deck-editor>
+            <deck-preview name="deck-preview"></deck-preview>
+            <web-credits name="web-credits"></web-credits>
+            <error-404 name="error-404"></error-404>
+          </iron-pages>
+        </app-header-layout>
+      </app-drawer-layout>
+    </div>
     <!--Diaglogs-->
-    <add-card-text></add-card-text>
-
+    <add-bulk></add-bulk>
+    
     <!--Backend-->
     <deck-manager></deck-manager>
   </template>
@@ -145,6 +151,11 @@
           '_routePageChanged(routeData.page)',
         ];
       }
+      
+      ready() {
+        super.ready();
+        document.addEventListener('dialog-overlay', e => this._blurBackground(e));
+      }
 
       _routePageChanged(page) {
         // If no page was found in the route data, page will be an empty string.
@@ -172,7 +183,7 @@
       }
 
       _showAddCardText() {
-        document.dispatchEvent(new CustomEvent('show-add-card-text'));
+        document.dispatchEvent(new CustomEvent('show-add-bulk'));
       }
       
       _clearAllDecks() {
@@ -180,6 +191,12 @@
       }
       _downloadYDK() {
         document.dispatchEvent(new CustomEvent('download-ydk', {detail: {deckname: this.deckname}}));
+      }
+
+      _blurBackground(e) {
+        var overlay = this.$.overlay;
+        var blurAttribute = 'opacity: 0.8; -webkit-filter: blur(2px); -moz-filter: blur(2px); -o-filter: blur(2px); -ms-filter: blur(2px); filter: blur(2px);';
+        overlay.setAttribute('style', e.detail.blur ? blurAttribute: '');
       }
     }
 
