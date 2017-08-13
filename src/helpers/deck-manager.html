@@ -80,10 +80,10 @@
             } else if (isName) {
               apiSearch = "name";
             }
+
             var url = this.apiUrl + apiSearch + "=" + card;
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
-            var reference = this;
             xhr.onreadystatechange = function () {
               if (xhr.readyState == 4 && xhr.status == 200) {
                 var ygoprodb = JSON.parse(xhr.responseText);
@@ -92,8 +92,11 @@
                 reference.downloading = false;
               }
             };
+
+            var reference = this;
             var f = Object.create(xhr.onreadystatechange.prototype);
-            xhr.onreadystatechange.apply(f, reference)
+            xhr.onreadystatechange.apply(f, reference);
+
             xhr.send();
           }
         }

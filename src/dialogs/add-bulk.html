@@ -89,7 +89,6 @@
       ready() {
         super.ready();
         document.addEventListener('show-add-bulk', e => this.show(e));
-        document.addEventListener('read-ydk', e => this.readYDK(e));
       }
 
       show(e) {
@@ -119,6 +118,7 @@
       _triggerFilePicker(e) {
         this.$.ydkpicker.inputElement.inputElement.click();
       }
+
       load(e) {
         if(!window.FileReader) return; // Browser is not compatible
         var reader = new FileReader();
@@ -127,6 +127,7 @@
           this.deckName = this.$.ydkpicker.inputElement.inputElement.value
             .replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "");
           
+          var reference = this;
           reader.onload = function(e) {
             if(e.target.readyState != 2) return;
             if(e.target.error) {
@@ -142,14 +143,10 @@
 
               flitered = filter ? flitered : flitered + line + "\n";
             }
-            document.dispatchEvent(new CustomEvent('read-ydk', {detail: {ydk: flitered}}));
+            reference.cardsToAdd = flitered;
           };
           reader.readAsText(ydkpicker.files[0]);
         }
-      }
-
-      readYDK(e) {
-        this.cardsToAdd = e.detail.ydk;
       }
 
       submit(e) {
