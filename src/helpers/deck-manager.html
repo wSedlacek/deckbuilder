@@ -21,6 +21,10 @@
             type: String,
             value: "http://ygodb.pe.hu/api/api.php/search?"
           },
+          downloading: {
+            type: Boolean,
+            value: false
+          },
           mainDeck: {
             type: Array,
             value: function () { return []; }
@@ -39,12 +43,24 @@
       ready() {
         super.ready();
         document.addEventListener('create-card', e => this.createCard(e));
+        document.addEventListener('find-card-source', e => this.findCardSource(e));        
         document.addEventListener('add-card', e => this.addCard(e));
         document.addEventListener('remove-card', e => this.removeCard(e));
         document.addEventListener('clear-card-from-main', e => this.clearCard(e));
         document.addEventListener('clear-card-from-side', e => this.clearCard(e));
         document.addEventListener('clear-card-from-extra', e => this.clearCard(e));
         document.addEventListener('download-ydk', e => this.downloadYDK(e));
+
+        document.addEventListener('start-download', e => this.startDownload(e));
+        document.addEventListener('stop-download', e => this.stopDownload(e));
+      }
+
+      startDownload() {
+        this.downloading = true;
+      }
+
+      stopDownload() {
+        this.downloading = false;
       }
 
       isID (o) {
@@ -56,29 +72,61 @@
         return true;
       }
 
-      createCard (e) {
-        var isID = this.isID(e.detail.card)
-        var isName = this.isName(e.detail.card);
+      createCard(e) {
+        this._createCard(e, this);
+      }
 
+      _createCard(e, reference) {
+        if(reference.downloading) {
+          setTimeout(reference._createCard, 10, e, reference);
+        } else {
+          reference.downloading = true;
+          document.dispatchEvent(new CustomEvent('find-card-source', {detail: e.detail}));
+        }
+      }
+
+       findCardSource(e) {
+        var card = this._findCardInDeck(e.detail.card, e.detail.deck);
+        if (card != null) {
+          document.dispatchEvent(new CustomEvent('add-card', {detail: {card: card, deck: e.detail.deck}}));
+        } else {
+          this._downloadCard(e.detail.card, e.detail.deck);
+        }
+      }
+      
+      _downloadCard(card, deck) {
+        var isID = this.isID(card)
+        var isName = this.isName(card);
         var apiSearch = "";
         if (isID) {
           apiSearch = "id";
         } else if (isName) {
           apiSearch = "name";
         }
-
-        var url = this.apiUrl + apiSearch + "=" + e.detail.card;
-
+        var url = this.apiUrl + apiSearch + "=" + card;
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                var ygoprodb = {}
-                ygoprodb = JSON.parse(xhr.responseText);
-                document.dispatchEvent(new CustomEvent('add-card', {detail: {card: ygoprodb, deck: e.detail.deck}}));
-            }
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            var ygoprodb = JSON.parse(xhr.responseText);
+            document.dispatchEvent(new CustomEvent('add-card', {detail: {card: ygoprodb, deck: deck}}));
+          } else {
+            document.dispatchEvent(new CustomEvent('stop-download'));
+          }
         };
         xhr.send();
+      }
+
+      _findCardInDeck(card, deck) {
+        var deck = this.spliceExtraDeck(card, deck);
+        var pendingDeck = this.getDeck(deck);
+        for (var i = 0; i < pendingDeck.length; i++) {
+          for (var j = 0; j < pendingDeck[i].ids.length; j++) {
+            if (card == pendingDeck[i].name || card == pendingDeck[i].ids[j]) {
+              return pendingDeck[i];
+            }
+          }
+        }
       }
 
       addCard(e) {
@@ -108,13 +156,13 @@
           window.alert("Hey now! You can only have three of the same card in a deck."); //Placeholder
         }
         this.setDeck(deck, pendingDeck);
+        this.stopDownload();
       }
 
       removeCard(e) {
         var deck = this.spliceExtraDeck(e.detail.card, e.detail.card.deck);
         var pendingDeck = this.getDeck(deck);
         var itemToRemove;
-        var BreakException = {};
         for (var i = 0; i < pendingDeck.length; i++) {
           if (e.detail.card.name == pendingDeck[i].name) {
             itemToRemove = i;

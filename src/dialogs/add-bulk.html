@@ -139,6 +139,7 @@
               var line = lines[i].replace(/,\s*$/, "");
               var filter = false;
               if (line.indexOf("#created") == 0) filter = true;
+
               flitered = filter ? flitered : flitered + line + "\n";
             }
             document.dispatchEvent(new CustomEvent('read-ydk', {detail: {ydk: flitered}}));
@@ -155,13 +156,35 @@
         var lines = this.cardsToAdd.split('\n');
         this.hide(e);
         var deck = "main";
-        for(var i = 0;i < lines.length;i++){
+        for(var i = 0;i < lines.length;i++) {
           var line = lines[i].replace(/,\s*$/, "");
           if (line == "#main") deck = "main";
           else if (line == "#extra") deck = "extra";
           else if (line == "!side") deck = "side";
-          else document.dispatchEvent(new CustomEvent('create-card', {detail: {card: line, deck: deck}}));
+          else {
+            var count = 1;
+            var ignoreChars = this._getCharsToIgnore(line);
+            if (ignoreChars > 0) {
+              count = line.charAt(0);
+              line = line.substr(ignoreChars);
+            }
+            for (var j = 0; j < count; j++) {
+              document.dispatchEvent(new CustomEvent('create-card', {detail: {card: line, deck: deck}}));
+            }
+          }
         }
+      }
+
+      _isValidCount(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n) && n <= 3;
+      }
+
+      _getCharsToIgnore(line) {
+        var ignore = 0;
+        if (this._isValidCount(line.charAt(0))) ignore++;
+        if (line.charAt(1) == " " || line.charAt(1) == "x" || line.charAt(1) == "X") ignore++;
+        if (line.charAt(2) == " ") ignore++;
+        return ignore;
       }
     }
     
