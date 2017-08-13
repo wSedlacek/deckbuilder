@@ -54,51 +54,47 @@
         return ! isNaN (o-0) && o !== null && o !== "" && o !== false;
       }
     
-      //Todo: Fix is Name
       isName (o) {
-        return true;
+        return isNaN (o) && o !== null && o !== "" && o !== false;
       }
 
-      createCard(e) {
-        this._createCard(e.detail.card, e.detail.deck, this);
-      }
-
-      _createCard(card, deck, reference) {
+      createCard(e, reference = this) {
         if(reference.downloading) {
-          setTimeout(reference._createCard, 10, card, deck, reference);
+          window.setTimeout(reference.createCard, 10, e, reference);
         } else {
-          reference.downloading = true;
-          var cardClone = this._findCardInDeck(card, deck);
-          if (cardClone != null) {
-            this.addCard(cardClone, deck);
-          } else {
-            var isID = this.isID(card)
-            var isName = this.isName(card);
-            var apiSearch = "";
-            if (isID) {
-              apiSearch = "id";
-            } else if (isName) {
-              apiSearch = "name";
-            }
+          reference._createCard(e.detail.card, e.detail.deck);
+        }
+      }
 
-            var url = this.apiUrl + apiSearch + "=" + card;
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, true);
-            xhr.onreadystatechange = function () {
-              if (xhr.readyState == 4 && xhr.status == 200) {
-                var ygoprodb = JSON.parse(xhr.responseText);
-                reference.addCard(ygoprodb, deck);
-              } else {
-                reference.downloading = false;
-              }
-            };
-
-            var reference = this;
-            var f = Object.create(xhr.onreadystatechange.prototype);
-            xhr.onreadystatechange.apply(f, reference);
-
-            xhr.send();
+      _createCard(card, deck) {
+        this.downloading = true;
+        var cardClone = this._findCardInDeck(card, deck);
+        if (cardClone != null) {
+          this.addCard(cardClone, deck);
+        } else {
+          var isID = this.isID(card)
+          var isName = this.isName(card);
+          var apiSearch = "";
+          if (isID) {
+            apiSearch = "id";
+          } else if (isName) {
+            apiSearch = "name";
           }
+
+          var url = this.apiUrl + apiSearch + "=" + card;
+          var xhr = new XMLHttpRequest();
+          var reference = this;
+          xhr.open("GET", url, true);
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+              var ygoprodb = JSON.parse(xhr.responseText);
+              reference.addCard(ygoprodb, deck);
+            } else {
+              reference.downloading = false;
+            }
+          };
+
+          xhr.send();
         }
       }
 
