@@ -42,25 +42,12 @@
       
       ready() {
         super.ready();
-        document.addEventListener('create-card', e => this.createCard(e));
-        document.addEventListener('find-card-source', e => this.findCardSource(e));        
-        document.addEventListener('add-card', e => this.addCard(e));
+        document.addEventListener('create-card', e => this.createCard(e));        
         document.addEventListener('remove-card', e => this.removeCard(e));
         document.addEventListener('clear-card-from-main', e => this.clearCard(e));
         document.addEventListener('clear-card-from-side', e => this.clearCard(e));
         document.addEventListener('clear-card-from-extra', e => this.clearCard(e));
         document.addEventListener('download-ydk', e => this.downloadYDK(e));
-
-        document.addEventListener('start-download', e => this.startDownload(e));
-        document.addEventListener('stop-download', e => this.stopDownload(e));
-      }
-
-      startDownload() {
-        this.downloading = true;
-      }
-
-      stopDownload() {
-        this.downloading = false;
       }
 
       isID (o) {
@@ -73,53 +60,48 @@
       }
 
       createCard(e) {
-        this._createCard(e, this);
+        this._createCard(e.detail.card, e.detail.deck, this);
       }
 
-      _createCard(e, reference) {
+      _createCard(card, deck, reference) {
         if(reference.downloading) {
-          setTimeout(reference._createCard, 10, e, reference);
+          setTimeout(reference._createCard, 10, card, deck, reference);
         } else {
           reference.downloading = true;
-          document.dispatchEvent(new CustomEvent('find-card-source', {detail: e.detail}));
-        }
-      }
-
-       findCardSource(e) {
-        var card = this._findCardInDeck(e.detail.card, e.detail.deck);
-        if (card != null) {
-          document.dispatchEvent(new CustomEvent('add-card', {detail: {card: card, deck: e.detail.deck}}));
-        } else {
-          this._downloadCard(e.detail.card, e.detail.deck);
-        }
-      }
-      
-      _downloadCard(card, deck) {
-        var isID = this.isID(card)
-        var isName = this.isName(card);
-        var apiSearch = "";
-        if (isID) {
-          apiSearch = "id";
-        } else if (isName) {
-          apiSearch = "name";
-        }
-        var url = this.apiUrl + apiSearch + "=" + card;
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState == 4 && xhr.status == 200) {
-            var ygoprodb = JSON.parse(xhr.responseText);
-            document.dispatchEvent(new CustomEvent('add-card', {detail: {card: ygoprodb, deck: deck}}));
+          var cardClone = this._findCardInDeck(card, deck);
+          if (cardClone != null) {
+            this.addCard(cardClone, deck);
           } else {
-            document.dispatchEvent(new CustomEvent('stop-download'));
+            var isID = this.isID(card)
+            var isName = this.isName(card);
+            var apiSearch = "";
+            if (isID) {
+              apiSearch = "id";
+            } else if (isName) {
+              apiSearch = "name";
+            }
+            var url = this.apiUrl + apiSearch + "=" + card;
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            var reference = this;
+            xhr.onreadystatechange = function () {
+              if (xhr.readyState == 4 && xhr.status == 200) {
+                var ygoprodb = JSON.parse(xhr.responseText);
+                reference.addCard(ygoprodb, deck);
+              } else {
+                reference.downloading = false;
+              }
+            };
+            var f = Object.create(xhr.onreadystatechange.prototype);
+            xhr.onreadystatechange.apply(f, reference)
+            xhr.send();
           }
-        };
-        xhr.send();
+        }
       }
 
       _findCardInDeck(card, deck) {
         var deck = this.spliceExtraDeck(card, deck);
-        var pendingDeck = this.getDeck(deck);
+        var pendingDeck = this._getDeck(deck);
         for (var i = 0; i < pendingDeck.length; i++) {
           for (var j = 0; j < pendingDeck[i].ids.length; j++) {
             if (card == pendingDeck[i].name || card == pendingDeck[i].ids[j]) {
@@ -129,10 +111,10 @@
         }
       }
 
-      addCard(e) {
-        var name = e.detail.card.name;
-        var deck = this.spliceExtraDeck(e.detail.card, e.detail.deck);
-        var pendingDeck = this.getDeck(deck);
+      addCard(card, deck) {
+        var name = card.name;
+        var deck = this.spliceExtraDeck(card, deck);
+        var pendingDeck = this._getDeck(deck);
 
         var count = 0;
         pendingDeck.forEach(function(currentCard) {
@@ -144,24 +126,24 @@
         if (count < 3) {
           if (count == 0) {
             count++;
-            document.dispatchEvent(new CustomEvent('add-card-to-' + deck, {detail: {card: e.detail.card}}));
+            document.dispatchEvent(new CustomEvent('add-card-to-' + deck, {detail: {card: card}}));
           } else {
             count++;
             document.dispatchEvent(new CustomEvent(deck + '-update-count-' + name, {detail: {count: count}}));
           }
           console.log(name + " is being added to " + deck);
-          pendingDeck.push(e.detail.card);
-          document.dispatchEvent(new CustomEvent('draw-card', {detail: {card: e.detail.card, deck: deck}}));
+          pendingDeck.push(card);
+          document.dispatchEvent(new CustomEvent('draw-card', {detail: {card: card, deck: deck}}));
         } else {
           window.alert("Hey now! You can only have three of the same card in a deck."); //Placeholder
         }
-        this.setDeck(deck, pendingDeck);
-        this.stopDownload();
+        this._setDeck(deck, pendingDeck);
+        this.downloading = false;
       }
 
       removeCard(e) {
         var deck = this.spliceExtraDeck(e.detail.card, e.detail.card.deck);
-        var pendingDeck = this.getDeck(deck);
+        var pendingDeck = this._getDeck(deck);
         var itemToRemove;
         for (var i = 0; i < pendingDeck.length; i++) {
           if (e.detail.card.name == pendingDeck[i].name) {
@@ -173,7 +155,7 @@
         console.log(pendingDeck[itemToRemove].name + " is being removed from " + deck);
         pendingDeck.splice(itemToRemove, 1);
 
-        this.setDeck(deck, pendingDeck);
+        this._setDeck(deck, pendingDeck);
       }
 
       clearCard(e) {
@@ -196,7 +178,7 @@
       }
 
       downloadYDK(e) {
-        var textToSave = this.createYDK();
+        var textToSave = this._createYDK();
         var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
         var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
         var fileNameToSaveAs = e.detail.deckname + ".ydk";
@@ -209,14 +191,14 @@
         downloadLink.click();
       }
 
-      createYDK() {
+      _createYDK() {
         var prefix = "#Created by Ultimate Deck Builder\n";
-        return prefix + this.createYDKFor("main") + this.createYDKFor("extra") + this.createYDKFor("side");
+        return prefix + this._createYDKFor("main") + this._createYDKFor("extra") + this._createYDKFor("side");
       }
 
-      createYDKFor(deck) {
+      _createYDKFor(deck) {
         var YDK = "";
-        var targetdeck = this.getDeck(deck);
+        var targetdeck = this._getDeck(deck);
         if (targetdeck.length > 0) {
           var prefix = deck == "side" ? "!" : "#"; 
           YDK += prefix + deck + "\n"
@@ -227,7 +209,7 @@
         return YDK;
       }
 
-      getDeck(deck) {
+      _getDeck(deck) {
         switch (deck) {
           case "main":  return this.mainDeck;  break;
           case "extra": return this.extraDeck; break;
@@ -236,7 +218,7 @@
         }
       }
 
-      setDeck(deck, pendingDeck) {
+      _setDeck(deck, pendingDeck) {
         switch (deck) {
           case "main":  this.mainDeck  = pendingDeck; break;
           case "extra": this.extraDeck = pendingDeck; break;
