@@ -7,7 +7,7 @@
 
 <link rel="import" href="../helpers/shared-styles.html">
 
-<dom-module id="add-bulk">
+<dom-module id="processing">
   <template>
     <style include="shared-styles">
       :host {
@@ -19,46 +19,10 @@
       }
       paper-dialog {
         max-width: 90%;
-        width: 600px;
-      }
-      .buttons {
-        display: flex;
-      }
-      paper-tabs {
-        font-family: 'Roboto', 'Noto', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        width: 100%;
-        text-transform: uppercase;
-        margin-bottom: 1px;
-        margin: 0;
-      }
-      #header{
-        display: flex;
-        margin: 0px;
-        align-items: flex-end;
-        background: #4285f4;
-        color: white;
+        width: 200px;
       }
     </style>
-    <paper-dialog entry-animation="scale-up-animation" exit-animation="fade-out-animation" id="addText">
-      <div id="header">
-        <paper-tabs selected="{{selected}}" scrollable fit-container>
-          <paper-tab>Text</paper-tab>
-          <paper-tab>File</paper-tab>
-        </paper-tabs>
-      </div>
-      <div id="text">
-        <paper-input always-float-label label="Name of Deck" value="{{deckName}}"></paper-input>
-        <paper-textarea always-float-label label="Card Names or Card IDs"rows="10" max-rows="10" value="{{cardsToAdd}}"></paper-textarea>
-      </div>
-      <div id="file" style="display: none;">
-        <paper-input readOnly always-float-label label="YDK File" on-tap="_triggerFilePicker" value="{{deckName}}"></paper-input>
-        <paper-input style="display: none;" type="file" id="ydkpicker" accepted="*.ydk" on-change="load"></paper-input>
-      </div>
-      <div id="buttons" class="buttons">
-        <paper-button on-tap="cancel">Cancel</paper-button>
-        <paper-button on-tap="submit">Upload</paper-button>
-      </div>
+    <paper-dialog entry-animation="scale-up-animation" exit-animation="fade-out-animation" id="processing">
     </paper-dialog>
   </template>
 
@@ -84,24 +48,23 @@
       }
       ready() {
         super.ready();
-        document.addEventListener('show-add-bulk', e => this.show(e));
-        document.addEventListener('read-ydk', e => this.readYDK(e));
+        document.addEventListener('show-processing', e => this.show(e));
       }
 
       show(e) {
-        var dialog = this.$.addText;
+        var dialog = this.$.processing;
         if (dialog) {
           dialog.open();
         }
       }
       hide(e) {
-        var dialog = this.$.addText;
+        var dialog = this.$.processing;
         if (dialog) {
           dialog.close();
         }
       }
     }
     
-    window.customElements.define(AddBulk.is, AddBulk);
+    window.customElements.define(Processing.is, Processing);
   </script>
 </dom-module>

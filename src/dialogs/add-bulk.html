@@ -44,7 +44,10 @@
         color: white;
       }
     </style>
-    <paper-dialog entry-animation="scale-up-animation" exit-animation="fade-out-animation" id="addBulk">
+    <paper-dialog entry-animation="scale-up-animation"
+                  exit-animation="fade-out-animation"
+                  id="addBulk" with-backdrop
+                  opened="{{opened}}">
       <div id="header">
         <paper-tabs selected="{{selected}}" scrollable fit-container>
           <paper-tab>Text</paper-tab>
@@ -57,11 +60,11 @@
       </div>
       <div id="file" style="display: none;">
         <paper-input readOnly always-float-label label="YDK File" on-tap="_triggerFilePicker" value="{{deckName}}"></paper-input>
-        <paper-input style="display: none;" type="file" id="ydkpicker" accepted="*.ydk" on-change="load"></paper-input>
+        <paper-input style="display: none;" type="file" id="ydkpicker" accepted="*.ydk" on-change="_load"></paper-input>
       </div>
       <div id="buttons" class="buttons">
-        <paper-button on-tap="cancel">Cancel</paper-button>
-        <paper-button on-tap="submit">Upload</paper-button>
+        <paper-button on-tap="_cancel">Cancel</paper-button>
+        <paper-button on-tap="_submit">Upload</paper-button>
       </div>
     </paper-dialog>
   </template>
@@ -79,6 +82,11 @@
             type: String,
             value: ''
           },
+          opened: {
+            type: Boolean,
+            value: false,
+            observer: '_updateBlurOveraly'
+          },
           selected: {
             type: Number,
             value: 0,
@@ -92,21 +100,21 @@
       }
 
       show(e) {
-        var dialog = this.$.addBulk;
-        if (!dialog) return
         this.cardsToAdd = "";
         this.deckName = "";
         this.selected = 0;
-        dialog.open();
-        document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: true}}));
+        this.opened = true;
       }
+
       hide(e) {
-        var dialog = this.$.addBulk;
-        if (!dialog) return;
-        dialog.close();
-        document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: false}}));
+        this.opened = false;
       }
-      cancel(e) {
+
+      _updateBlurOveraly(e) {
+        document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: this.opened}}));
+      }
+
+      _cancel(e) {
         this.hide(e);
       }
 
@@ -119,7 +127,7 @@
         this.$.ydkpicker.inputElement.inputElement.click();
       }
 
-      load(e) {
+      _load(e) {
         if(!window.FileReader) return; // Browser is not compatible
         var reader = new FileReader();
         var ydkpicker = this.$.ydkpicker.inputElement.inputElement;
@@ -149,7 +157,7 @@
         }
       }
 
-      submit(e) {
+      _submit(e) {
         var lines = this.cardsToAdd.split('\n');
         this.hide(e);
         var deck = "main";
