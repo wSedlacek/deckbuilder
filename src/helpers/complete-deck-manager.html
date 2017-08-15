@@ -20,9 +20,23 @@
   <script>
     class CompleteDeckManager extends Polymer.Element {
       static get is() { return 'complete-deck-manager'; }
+      static get properties() {
+        return {
+          bulkProcessed: {
+            type: Number,
+            value: 0,
+            observer: 'countProcessed'
+          },
+          bulkTotal: {
+            type: Number,
+            value: 0
+          }
+        };
+      }
       ready() {
         super.ready();
         document.addEventListener('add-card', e => this.addCard(e));
+        document.addEventListener('update-bulk-total', e => this.updateBulkTotal(e));
         document.addEventListener('download-ydk', e => this.downloadYDK(e));
       }
 
@@ -37,13 +51,26 @@
           window.setTimeout(reference.addCard, 10, e, reference);
         } else {
           deck.addingCard = true;
+          var bulk = e.detail.bulk != null? e.detail.bulk : false;
           var cardClone = deck.findCardInDeck(e.detail.card);
           if (cardClone != null) {
             deck.addCard(cardClone);
+            if (bulk) reference.bulkProcessed++;
           } else {
-            lookup.lookupCardAndAdd({search: e.detail.card, deck: deckType}, deck);
+            lookup.lookupCardAndAdd({search: e.detail.card, deck: deckType, bulk: bulk}, deck, reference);
           }
         }
+      }
+
+      countProcessed() {
+        if(this.bulkProcessed >= this.bulkTotal && this.bulkTotal != 0) {
+          document.dispatchEvent(new CustomEvent('hide-processing-data'));
+          this.bulkProcessed = this.bulkTotal = 0;
+        }
+      }
+
+      updateBulkTotal(e) {
+        this.bulkTotal = e.detail.total;
       }
 
       getDeck(deck) {

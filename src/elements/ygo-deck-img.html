@@ -52,8 +52,8 @@
 
       ready() {
         super.ready();
-        document.addEventListener('draw-card', e => this.drawCard(e));
-        document.addEventListener('remove-card', e => this.removeCard(e));
+        document.addEventListener('draw-card-for-' + this.deck, e => this.drawCard(e));
+        document.addEventListener('remove-card-from-' + this.deck, e => this.removeCard(e));
       }
 
       clearDeck(e) {
@@ -64,7 +64,6 @@
       }
 
       drawCard(e) {
-        if (this.deck != e.detail.card.deck) return;
         this.$.empty.setAttribute('style','display: none;');
         var targetdeck = this.$.deck;
         var img = document.createElement('ygo-card-img');
@@ -77,7 +76,6 @@
       }
 
       removeCard(e) {
-        if (this.deck != e.detail.card.deck) return;
         var targetdeck = this.$.deck;
         var cards = [].slice.call(targetdeck.children);
         for (var i = 0; i < cards.length; i++) {

@@ -157,29 +157,33 @@
       }
 
       _submit(e) {
-        var lines = this.cardsToAdd.split('\n');
+        var lines = this.cardsToAdd.trim().split('\n');
         this.hide(e);
-        //document.dispatchEvent(new CustomEvent('show-processing-data'));
+        document.dispatchEvent(new CustomEvent('show-processing-data'));
         if (this.deckName != "")
           document.dispatchEvent(new CustomEvent('rename-deck', {detail: {deckname: this.deckName}}));
         var deck = "main";
-        for(var i = 0;i < lines.length;i++) {
+        var total = lines.length;
+        for(var i = 0; i < lines.length;i++) {
           var line = lines[i].replace(/,\s*$/, "");
-          if (line.includes("#main")) deck = "main";
-          else if (line.includes("#extra")) deck = "extra";
-          else if (line.includes("!side")) deck = "side";
+          if (line.trim().length == 0) { total--;}
+          else if (line.includes("#main")) { deck = "main"; total--; }
+          else if (line.includes("#extra")) { deck = "extra"; total--; }
+          else if (line.includes("!side")) { deck = "side"; total--; }
           else {
             var count = 1;
             var ignoreChars = this._getCharsToIgnore(line);
-            if (ignoreChars > 0) {
+            if (ignoreChars > 1) {
               count = line.charAt(0);
               line = line.substr(ignoreChars);
             }
+            total += count - 1;
             for (var j = 0; j < count; j++) {
-              document.dispatchEvent(new CustomEvent('add-card', {detail: {card: line, deck: deck}}));
+              document.dispatchEvent(new CustomEvent('add-card', {detail: {card: line, deck: deck, bulk: true}}));
             }
           }
         }
+        document.dispatchEvent(new CustomEvent('update-bulk-total', {detail: {total: total}}));
       }
 
       _isValidCount(n) {

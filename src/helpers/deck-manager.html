@@ -61,7 +61,7 @@
           }
           this.deck.push(card);
           document.dispatchEvent(new CustomEvent('update-count-for-' + this.id, {detail: {count: this.deck.length}}));
-          document.dispatchEvent(new CustomEvent('draw-card', {detail: {card: card}}));
+          document.dispatchEvent(new CustomEvent('draw-card-for-' + this.id, {detail: {card: card}}));
         } else {
           document.dispatchEvent(new CustomEvent('card-limit', {detail: {card: card}}));
         }
