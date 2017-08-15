@@ -159,7 +159,9 @@
       _submit(e) {
         var lines = this.cardsToAdd.split('\n');
         this.hide(e);
-        document.dispatchEvent(new CustomEvent('show-processing-data'));
+        //document.dispatchEvent(new CustomEvent('show-processing-data'));
+        if (this.deckName != "")
+          document.dispatchEvent(new CustomEvent('rename-deck', {detail: {deckname: this.deckName}}));
         var deck = "main";
         for(var i = 0;i < lines.length;i++) {
           var line = lines[i].replace(/,\s*$/, "");

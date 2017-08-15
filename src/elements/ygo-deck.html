@@ -17,10 +17,13 @@
       #header {
         text-align: center;
       }
+      h {
+        text-transform: capitalize;
+      }
     </style>
     <div id="deck" class="card">
       <div id="header">
-        <h>[[Deck]] Deck</h>
+        <h>[[deck]] Deck</h>
         <hr>
         <h2 id="empty">Empty Deck</h2>
       </div>
@@ -35,10 +38,6 @@
           deck: {
             type: String,
             value: 'main'
-          },
-          Deck: {
-            type: String,
-            value: 'Main'
           }
         };
       }
@@ -56,27 +55,9 @@
         var deck   = this.$.deck;
         var card   = document.createElement('ygo-card');
         var type;
-        card.name  = e.detail.card.name;
+        card.card  = e.detail.card;
         card.count = 1;
         card.deck  = this.deck;
-        switch (e.detail.card.allTypes[0]) {
-          case "Monster":
-            for (var i = 0; i < e.detail.card.allTypes.length; i++) {
-              switch (e.detail.card.allTypes[i]) {
-                case "Normal": type = e.detail.card.allTypes[i]; break;
-                case "Effect": type = e.detail.card.allTypes[i]; break;
-                case "Ritual": type = e.detail.card.allTypes[i]; break;
-                case "Fusion": type = e.detail.card.allTypes[i]; break;
-                case "Synchro": type = e.detail.card.allTypes[i]; break;
-                case "Xyz": type = e.detail.card.allTypes[i]; break;
-                case "Pendulum": type = e.detail.card.allTypes[i]; break;
-                case "Link": type = e.detail.card.allTypes[i]; break;
-              }
-            } break;
-          case "Spell": type = e.detail.card.allTypes[0]; break;
-          case "Trap": type = e.detail.card.allTypes[0]; break;
-        }
-        card.type  = type
         deck.appendChild(card);
       }
 

@@ -4,6 +4,8 @@
 <link rel="import" href="../../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="../helpers/shared-styles.html">
 
+<link rel="import" href="ygo-card-img.html">
+
 <dom-module id="ygo-card">
   <template>
     <style include="shared-styles">
@@ -70,7 +72,7 @@
         </div>
         <div class="clear">
           <div class="right-algin">
-            <paper-icon-button icon="info-outline" id="type" class="inline"></paper-icon-button>
+            <ygo-card-img card="[[card]]" height="32px" width="24px"></ygo-card-img>
             <paper-icon-button icon="clear" on-tap="clearCard"></paper-icon-button>
           </div>
         </div>
@@ -83,20 +85,9 @@
       
       ready(){
         super.ready();
-        document.addEventListener(this.deck + '-update-count-' + this.name, e => this.updateCount(e));
-        switch (this.type) {
-          case "Normal":   this.color = "#FDD835"; break;
-          case "Effect":   this.color = "#FF8F00"; break;
-          case "Ritual":   this.color = "#039BE5"; break; 
-          case "Fusion":   this.color = "#9C27B0"; break;
-          case "Synchro":  this.color = "#FFFFFF"; break;
-          case "Xyz":      this.color = "#263238"; break;
-          case "Pendulum": this.color = "#43A047"; break;
-          case "Link":     this.color = "#0277BD"; break;
-          case "Spell":    this.color = "#4CAF50"; break;
-          case "Trap":     this.color = "#D81B60"; break;
-        }
+        this.name = this.card.name;
         this.$.name.setAttribute('style', 'color: '+ this.color);
+        document.addEventListener(this.deck + '-update-count-' + this.name, e => this.updateCount(e));
       }
 
       updateCount(e) {
@@ -129,6 +120,10 @@
 
       static get properties() {
         return {
+          card: {
+            type: Object,
+            value: function() { return {} }
+          },
           name: {
             type: String,
             value: 'Unknown Card'
@@ -137,17 +132,9 @@
             type: Number,
             value: '1'
           },
-          color: {
-            type: String,
-            value: '#fff'
-          },
           deck: {
             type: String,
             value: 'main'
-          },
-          type: {
-            type: String,
-            value: 'Unknown'
           }
         };
       }

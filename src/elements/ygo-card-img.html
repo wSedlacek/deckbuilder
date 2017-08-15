@@ -1,0 +1,60 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../helpers/shared-styles.html">
+
+<dom-module id="ygo-card-img">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: inline-flex;
+        vertical-align: middle;
+        padding: 2px;
+      }
+      img {
+        display: inline-block;
+      }
+    </style>
+    <img id="img" on-tap="triggerCardInfo">
+  </template>
+
+  <script>
+    class YGOCardImg extends Polymer.Element {
+      static get is() { return 'ygo-card-img'; }
+      static get properties() {
+        return {
+          card: {
+            type: Object,
+            value: function() { return {} }
+          },
+          imgUrl: {
+            type: String,
+            value: 'https://raw.githubusercontent.com/shadowfox87/AnimeStylePics/master/'
+          },
+          imgExt: {
+            type: String,
+            value: '.png'
+          },
+          width: {
+            type: String,
+            value: '0px'
+          },
+          height: {
+            type: String,
+            value: '0px'
+          },
+        };
+      }
+
+      ready() {
+        super.ready();
+        this.$.img.setAttribute('style','width: ' + this.width + '; height: ' + this.height);
+        this.$.img.setAttribute('src', this.imgUrl + this.card.ids[0] + this.imgExt);
+      }
+
+      triggerCardInfo(e) {
+        document.dispatchEvent(new CustomEvent('show-card-info', {detail: {card: this.card}}));
+      }
+    }
+
+    window.customElements.define(YGOCardImg.is, YGOCardImg);
+  </script>
+</dom-module>

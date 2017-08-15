@@ -20,6 +20,8 @@
 <!--Dialong Boxes-->
 <link rel="import" href="../dialogs/add-bulk.html">
 <link rel="import" href="../dialogs/processing-data.html">
+<link rel="import" href="../dialogs/rename-deck.html">
+
 
 
 <!--Deck Manager Backend-->
@@ -96,11 +98,11 @@
           <app-header slot="header" condenses reveals effects="waterfall">
             <app-toolbar>
               <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-              <paper-icon-button icon="create" on-tap="_editeDeckName"></paper-icon-button> 
+              <paper-icon-button icon="create" on-tap="_showRenameDeck"></paper-icon-button> 
               <div main-title>{{deckname}}</div>
-              <paper-icon-button icon="file-upload" on-tap="_showAddCardText"></paper-icon-button>
+              <paper-icon-button icon="file-upload" on-tap="_showAddBulk"></paper-icon-button>
               <paper-icon-button icon="file-download" on-tap="_downloadYDK"></paper-icon-button>
-              <paper-icon-button icon="clear" on-tap="_clearAllDecks"></paper-icon-button>
+              <paper-icon-button icon="delete" on-tap="_clearAllDecks"></paper-icon-button>
             </app-toolbar>
           </app-header>
 
@@ -117,9 +119,11 @@
         </app-header-layout>
       </app-drawer-layout>
     </div>
+    
     <!--Diaglogs-->
     <add-bulk></add-bulk>
     <processing-data></processing-data>
+    <rename-deck></rename-deck>
     
     <!--Backend-->
     <deck-manager></deck-manager>
@@ -157,6 +161,7 @@
       ready() {
         super.ready();
         document.addEventListener('dialog-overlay', e => this._blurBackground(e));
+        document.addEventListener('rename-deck', e => this._renameDeck(e));
       }
 
       _routePageChanged(page) {
@@ -184,12 +189,17 @@
         this.page = 'error-404';
       }
 
-      _showAddCardText() {
+      _showRenameDeck() {
+        document.dispatchEvent(new CustomEvent('show-rename-deck'));
+      }
+
+      _showAddBulk() {
         document.dispatchEvent(new CustomEvent('show-add-bulk'));
       }
       
       _clearAllDecks() {
         document.dispatchEvent(new CustomEvent('clear-all-decks'));
+        this.deckname = "Untitled";
       }
       _downloadYDK() {
         document.dispatchEvent(new CustomEvent('download-ydk', {detail: {deckname: this.deckname}}));
@@ -199,6 +209,10 @@
         var overlay = this.$.overlay;
         var blurAttribute = 'opacity: 0.8; -webkit-filter: blur(2px); -moz-filter: blur(2px); -o-filter: blur(2px); -ms-filter: blur(2px); filter: blur(2px);';
         overlay.setAttribute('style', e.detail.blur ? blurAttribute: '');
+      }
+
+      _renameDeck(e) {
+        this.deckname = e.detail.deckname;
       }
     }
 

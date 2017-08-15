@@ -1,6 +1,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../helpers/shared-styles.html">
 
+<link rel="import" href="ygo-card-img.html">
+
 <dom-module id="ygo-deck-img">
   <template>
     <style include="shared-styles">
@@ -11,10 +13,13 @@
       #header {
         text-align: center;
       }
+      h {
+        text-transform: capitalize;
+      }
     </style>
     <div class="card" id="deck">
       <div id="header">
-        <h>[[Deck]] Deck</h>
+        <h>[[deck]] Deck</h>
         <hr>
         <h2 id="empty">Empty Deck</h2>
       </div>
@@ -29,10 +34,6 @@
           deck: {
             type: String,
             value: 'main'
-          },
-          Deck: {
-            type: String,
-            value: 'Main'
           },
           imgUrl: {
             type: String,
@@ -53,7 +54,6 @@
         super.ready();
         document.addEventListener('draw-card', e => this.drawCard(e));
         document.addEventListener('remove-card', e => this.removeCard(e));
-        this.Deck = this.deck.replace(/\b./g, function(m){ return m.toUpperCase(); });
       }
 
       clearDeck(e) {
@@ -67,11 +67,11 @@
         if (this.deck != e.detail.deck) return;
         this.$.empty.setAttribute('style','display: none;');
         var targetdeck = this.$.deck;
-        var src = this.imgUrl + e.detail.card.ids[0] + this.imgExt;
-        var img = document.createElement('img');
-        img.src = src;
-        img.style.width  = "44px";
-        img.style.height = "64px";
+        var img = document.createElement('ygo-card-img');
+        img.ID = e.detail.card.ids[0];
+        img.width = '44px';
+        img.height = '64px';
+        img.card = e.detail.card;
         img.id = e.detail.card.name;
         targetdeck.appendChild(img);
       }

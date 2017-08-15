@@ -1,0 +1,108 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+
+<link rel="import" href="../helpers/shared-styles.html">
+
+<dom-module id="rename-deck">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+      :host > ::slotted(*) {
+        margin-top: 0px; 
+      }
+      paper-dialog {
+        max-width: 90%;
+        width: 600px;
+      }
+      .buttons {
+        display: flex;
+      }
+      #header{
+        text-align: center;
+        margin: 0px;
+        align-items: flex-end;
+        background: #4285f4;
+        color: white;
+        height: 48px;
+        line-height: 48px;
+        font-size: 1.17em;
+      }
+    </style>
+    <paper-dialog entry-animation="scale-up-animation"
+                  exit-animation="fade-out-animation"
+                   with-backdrop opened="{{opened}}">
+      <div id="header">
+        <h>DECK NAME</h>
+      </div>
+      <paper-input always-float-label label="Name of Deck" value="{{deckName}}" on-keydown="_keyDown"></paper-input>
+      <div id="buttons" class="buttons">
+        <paper-button on-tap="_cancel">Cancel</paper-button>
+        <paper-button on-tap="_submit">Rename</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    var enter = 13;
+    class RenameDeck extends Polymer.Element {
+      static get is() { return 'rename-deck'; }
+      static get properties() {
+        return {
+          deckName: {
+            type: String,
+            value: ''
+          },
+          opened: {
+            type: Boolean,
+            value: false,
+            observer: '_updateBlurOveraly'
+          }
+        };
+      }
+      ready() {
+        super.ready();
+        document.addEventListener('show-rename-deck', e => this.show(e));
+      }
+
+      show(e) {
+        this.deckName = "";
+        this.opened = true;
+      }
+
+      hide(e) {
+        this.opened = false;
+      }
+
+      _updateBlurOveraly(e) {
+        document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: this.opened}}));
+      }
+
+      _cancel(e) {
+        this.hide(e);
+      }
+
+      _submit(e) {
+        this.hide(e);
+        if (this.deckName != "")
+          document.dispatchEvent(new CustomEvent('rename-deck', {detail: {deckname: this.deckName}}));
+      }
+
+      _keyDown(e) {
+        if (e.keyCode == enter) {
+          this._submit(e);
+        }
+      }
+    }
+    
+    window.customElements.define(RenameDeck.is, RenameDeck);
+  </script>
+</dom-module>
