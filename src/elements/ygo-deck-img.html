@@ -19,7 +19,7 @@
     </style>
     <div class="card" id="deck">
       <div id="header">
-        <h>[[deck]] Deck</h>
+        <h>[[deck]] Deck ([[count]])</h>
         <hr>
         <h2 id="empty">Empty Deck</h2>
       </div>
@@ -35,17 +35,9 @@
             type: String,
             value: 'main'
           },
-          imgUrl: {
-            type: String,
-            value: 'https://raw.githubusercontent.com/shadowfox87/AnimeStylePics/master/'
-          },
-          imgExt: {
-            type: String,
-            value: '.png'
-          },
-          size: {
+          count: {
             type: Number,
-            value: '0'
+            value: 0
           }
         };
       }
@@ -54,13 +46,7 @@
         super.ready();
         document.addEventListener('draw-card-for-' + this.deck, e => this.drawCard(e));
         document.addEventListener('remove-card-from-' + this.deck, e => this.removeCard(e));
-      }
-
-      clearDeck(e) {
-        var targetdeck = this.$.deck;
-        while (targetdeck.firstChild) {
-          targetdeck.removeChild(targetdeck.firstChild);
-        }
+        document.addEventListener('update-count-for-' + this.deck, e => this.updateCount(e));
       }
 
       drawCard(e) {
@@ -86,6 +72,17 @@
         }
         if (cards.length <= 2)
           this.$.empty.setAttribute('style','display: block;');
+      }
+
+      clearDeck(e) {
+        var targetdeck = this.$.deck;
+        while (targetdeck.firstChild) {
+          targetdeck.removeChild(targetdeck.firstChild);
+        }
+      }
+
+      updateCount(e) {
+        this.count = e.detail.count;
       }
     }
 

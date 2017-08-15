@@ -79,26 +79,26 @@
 
   <script>
     var enter = 13;
-    var shift = 16;
+    var alt   = 18;
     class DeckEditor extends Polymer.Element {
       _changeAddLabel(newValue, oldValue) {
         this.addLabel = newValue ?  "Add a card to the side deck... Enter a Card Name or ID" : "Add a card... Enter a Card Name or ID";
       }
 
       _toggleShiftForSideDeck(e) {
-        this.shiftForSideDeck = this.useSideDeck;
+        this.altForSideDeck = this.useSideDeck;
       }
 
       _keyDown(e) {
         if (e.keyCode == enter) {
           this._addCard(e);
-        } else if (e.keyCode == shift && this.shiftForSideDeck) {
+        } else if (e.keyCode == alt && this.altForSideDeck) {
           this.useSideDeck = true;
         }
       }
 
       _keyUp(e) {
-        if (e.keyCode == shift && this.shiftForSideDeck) {
+        if (e.keyCode == alt && this.altForSideDeck) {
           this.useSideDeck = false;
         }
       }
@@ -119,7 +119,7 @@
             type: String,
             value: ''
           },
-          shiftForSideDeck: {
+          altForSideDeck: {
             type: Boolean,
             value: true
           },
