@@ -1,15 +1,20 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
 
 <link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="../../bower_components/neon-animation/web-animations.html">
 
+
+<link rel="import" href="../elements/ygo-card-img.html">
+
 <link rel="import" href="../helpers/shared-styles.html">
 
-<dom-module id="rename-deck">
+
+<dom-module id="card-info">
   <template>
     <style include="shared-styles">
       :host {
@@ -17,14 +22,12 @@
         padding: 0px;
       }
       :host > ::slotted(*) {
-        margin-top: 0px; 
+        margin-top: 0px;
       }
       paper-dialog {
         max-width: 90%;
+        max-height: 480px;
         width: 600px;
-      }
-      .buttons {
-        display: flex;
       }
       #header{
         text-align: center;
@@ -36,30 +39,70 @@
         line-height: 48px;
         font-size: 1.17em;
       }
+      paper-icon-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+      }
+      #img {
+        width: 45%;
+        margin: 20px 0 20px 10px;
+        padding: 0;
+      }
+      #info {
+        width: 50%;
+        margin: 20px 0 0 0;
+        padding: 0;
+        float: right;
+      }
+      h4 {
+        margin:0 15px 5px 0;
+        text-align: justify;
+        font-weight: normal;
+      }
     </style>
     <paper-dialog entry-animation="scale-up-animation"
                   exit-animation="fade-out-animation"
                   with-backdrop opened="{{opened}}">
       <div id="header">
-        <h>DECK NAME</h>
+        <h>[[card.name]] [[[id]]]</h>
+        <paper-icon-button icon="clear" on-click="hide"></paper-icon-button>
       </div>
-      <paper-input always-float-label label="Name of Deck" value="{{deckName}}" on-keydown="_keyDown"></paper-input>
-      <div id="buttons" class="buttons">
-        <paper-button on-tap="_cancel">Cancel</paper-button>
-        <paper-button on-tap="_submit">Rename</paper-button>
+      <img id="img">
+      <div id="info">
+        <code>
+          <h4>Attribute: [[card.attribute]]</h4>
+          <h4>Level: [[card.level]]</h4>
+          <h4>Attack: [[card.atk]]</h4>
+          <h4>Defence: [[card.def]]</h4>
+          <h4>Type: [[card.race]]</h4>
+          <h4>Effect: [[card.effect]]</h4>
+        </code>
       </div>
     </paper-dialog>
   </template>
 
   <script>
     var enter = 13;
-    class RenameDeck extends Polymer.Element {
-      static get is() { return 'rename-deck'; }
+    class CardInfo extends Polymer.Element {
+      static get is() { return 'card-info'; }
       static get properties() {
         return {
-          deckName: {
+          card: {
+            type: Object,
+            value: function() { return {} }
+          },
+          id: {
             type: String,
             value: ''
+          },
+          imgUrl: {
+            type: String,
+            value: 'https://raw.githubusercontent.com/shadowfox87/YGOSeries10CardPics/master/'
+          },
+          imgExt: {
+            type: String,
+            value: '.png'
           },
           opened: {
             type: Boolean,
@@ -68,13 +111,16 @@
           }
         };
       }
+      
       ready() {
         super.ready();
-        document.addEventListener('show-rename-deck', e => this.show(e));
+        document.addEventListener('show-card-info', e => this.show(e));
       }
 
       show(e) {
-        this.deckName = "";
+        this.card = e.detail.card;
+        this.id = this.card.ids[0];
+        this.$.img.setAttribute('src', this.imgUrl + this.id + this.imgExt);
         this.opened = true;
       }
 
@@ -85,24 +131,8 @@
       _updateBlurOveraly(e) {
         document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: this.opened}}));
       }
-
-      _cancel(e) {
-        this.hide(e);
-      }
-
-      _submit(e) {
-        this.hide(e);
-        if (this.deckName != "")
-          document.dispatchEvent(new CustomEvent('rename-deck', {detail: {deckname: this.deckName}}));
-      }
-
-      _keyDown(e) {
-        if (e.keyCode == enter) {
-          this._submit(e);
-        }
-      }
     }
     
-    window.customElements.define(RenameDeck.is, RenameDeck);
+    window.customElements.define(CardInfo.is, CardInfo);
   </script>
 </dom-module>

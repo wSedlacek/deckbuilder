@@ -13,7 +13,7 @@
         display: inline-block;
       }
     </style>
-    <img id="img" on-tap="triggerCardInfo">
+    <img id="img" on-click="triggerCardInfo">
   </template>
 
   <script>
@@ -41,6 +41,10 @@
             type: String,
             value: '0px'
           },
+          popup: {
+            type: Boolean,
+            value: true
+          }
         };
       }
 
@@ -51,7 +55,8 @@
       }
 
       triggerCardInfo(e) {
-        document.dispatchEvent(new CustomEvent('show-card-info', {detail: {card: this.card}}));
+        if (this.popup)
+          document.dispatchEvent(new CustomEvent('show-card-info', {detail: {card: this.card}}));
       }
     }
 
