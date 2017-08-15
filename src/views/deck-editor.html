@@ -47,14 +47,15 @@
     </style>
     <div class="card">
       <paper-input id="addCardInput"
-                  always-float-label 
-                  label="[[addLabel]]" 
+                  always-float-label
+                  label="[[addLabel]]"
                   on-keydown="_keyDown"
                   on-keyup="_keyUp"
-                  value="{{cardToAdd}}">
+                  value="{{cardToAdd}}"
+                  autofocus>
       </paper-input>
-      <paper-toggle-button id="sideDeckToggle" checked="{{useSideDeck}}" on-tap="_toggleShiftForSideDeck"></paper-toggle-button>
-      <paper-icon-button id="addCardButton" icon="add" on-tap="_addCard"></paper-icon-button>
+      <paper-toggle-button id="sideDeckToggle" checked="{{useSideDeck}}" on-click="_toggleShiftForSideDeck"></paper-toggle-button>
+      <paper-icon-button id="addCardButton" icon="add" on-click="_addCard"></paper-icon-button>
     </div>
     <div class="deck" id="main">
       <ygo-deck deck="main"></ygo-deck>
@@ -94,11 +95,11 @@
       }
 
       _addCard(e) {
-        document.dispatchEvent(new CustomEvent('create-card', {detail: {card: this.cardToAdd, deck: this.useSideDeck ? "side" : "main"}}));
+        document.dispatchEvent(new CustomEvent('add-card', {detail: {card: this.cardToAdd, deck: this.useSideDeck ? "side" : "main"}}));
       }
 
       static get is() { return 'deck-editor'; }
-      
+
       static get properties() {
         return {
           addLabel: {
@@ -121,7 +122,7 @@
         };
       }
     }
-    
+
     window.customElements.define(DeckEditor.is, DeckEditor);
   </script>
 </dom-module>

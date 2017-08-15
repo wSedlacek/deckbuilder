@@ -62,9 +62,9 @@
           targetdeck.removeChild(targetdeck.firstChild);
         }
       }
-      
+
       drawCard(e) {
-        if (this.deck != e.detail.deck) return;
+        if (this.deck != e.detail.card.deck) return;
         this.$.empty.setAttribute('style','display: none;');
         var targetdeck = this.$.deck;
         var img = document.createElement('ygo-card-img');

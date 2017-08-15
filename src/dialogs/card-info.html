@@ -26,8 +26,7 @@
       }
       paper-dialog {
         max-width: 90%;
-        max-height: 480px;
-        width: 600px;
+        max-height: 90%;
       }
       #header{
         text-align: center;
@@ -46,38 +45,50 @@
       }
       #img {
         width: 45%;
-        margin: 20px 0 20px 10px;
-        padding: 0;
       }
       #info {
         width: 50%;
-        margin: 20px 0 0 0;
-        padding: 0;
         float: right;
+      }
+      @media only screen
+      and (max-width : 500px) {
+        #info {
+          display: none;
+        }
+        #img {
+          width: 100%;
+        }
       }
       h4 {
         margin:0 15px 5px 0;
         text-align: justify;
         font-weight: normal;
+        font-size: 0.9em;
       }
     </style>
     <paper-dialog entry-animation="scale-up-animation"
                   exit-animation="fade-out-animation"
                   with-backdrop opened="{{opened}}">
       <div id="header">
-        <h>[[card.name]] [[[id]]]</h>
+        <h>[[card.name]] [[[card.ids.0]]] - $[[price]]</h>
         <paper-icon-button icon="clear" on-click="hide"></paper-icon-button>
       </div>
-      <img id="img">
-      <div id="info">
-        <code>
-          <h4>Attribute: [[card.attribute]]</h4>
-          <h4>Level: [[card.level]]</h4>
-          <h4>Attack: [[card.atk]]</h4>
-          <h4>Defence: [[card.def]]</h4>
-          <h4>Type: [[card.race]]</h4>
-          <h4>Effect: [[card.effect]]</h4>
-        </code>
+      <div id="body">
+        <img id="img">
+        <div id="info">
+          <code>
+            <h4 id="type">[[card.allTypes.0]] [[card.allTypes.1]] [[card.allTypes.2]] [[card.allTypes.3]]</h4>
+            <h4 id="attribute">Attribute: [[card.attribute]]</h4>
+            <h4 id="race">Race: [[card.race]]</h4>
+            <h4 id="level">Level: [[card.level]]</h4>
+            <h4 id="atk">Attack: [[card.atk]]</h4>
+            <h4 id="def">Defence: [[card.def]]</h4>
+            <h4 id="link">Link: [[card.link]]</h4>
+            <h4 id="pendulum">Scales: [[card.leftPendulumScale]] &#60;&#62; [[card.rightPendulumScale]]</h4>
+            <h4 id="pendulumEffect">Pendulum Effect: [[card.pendulumEffect]]</h4>
+            <h4 id="effect">Effect: [[card.effect]]</h4>
+          </code>
+        </div>
       </div>
     </paper-dialog>
   </template>
@@ -90,11 +101,11 @@
         return {
           card: {
             type: Object,
-            value: function() { return {} }
+            value: function() { return {ids: ['40640057']} }
           },
-          id: {
+          price: {
             type: String,
-            value: ''
+            value: '0.00'
           },
           imgUrl: {
             type: String,
@@ -111,7 +122,7 @@
           }
         };
       }
-      
+
       ready() {
         super.ready();
         document.addEventListener('show-card-info', e => this.show(e));
@@ -119,20 +130,71 @@
 
       show(e) {
         this.card = e.detail.card;
-        this.id = this.card.ids[0];
-        this.$.img.setAttribute('src', this.imgUrl + this.id + this.imgExt);
-        this.opened = true;
+
+        var monster;
+        var pendulum;
+        var link;
+
+        this.card.allTypes.forEach(function(type) {
+          switch (type) {
+            case "Monster": monster = true; break;
+            case "Pendulum": pendulum = true; break;
+            case "Link": link = true; break;
+          }
+        }, this);
+
+
+
+        if (monster) {
+          this.hideElement(this.$.attribute, false);
+          this.hideElement(this.$.race, false);
+          this.hideElement(this.$.level, false);
+          this.hideElement(this.$.atk, false);
+          if (link) {
+            this.hideElement(this.$.def);
+            this.hideElement(this.$.link, false);
+          } else {
+            this.hideElement(this.$.def, false);
+            this.hideElement(this.$.link);
+          }
+          if (pendulum) {
+            this.hideElement(this.$.pendulum, false);
+            this.hideElement(this.$.pendulumEffect, false);
+          } else {
+            this.hideElement(this.$.pendulum);
+            this.hideElement(this.$.pendulumEffect);
+          }
+        } else {
+          this.hideElement(this.$.attribute);
+          this.hideElement(this.$.race);
+          this.hideElement(this.$.level);
+          this.hideElement(this.$.atk);
+          this.hideElement(this.$.def);
+          this.hideElement(this.$.pendulum);
+          this.hideElement(this.$.pendulumEffect);
+        }
+
+        var reference = this;
+        this.$.img.src = this.imgUrl + this.card.ids[0] + this.imgExt;
+        this.$.img.onload = function() { reference.opened = true };
       }
 
       hide(e) {
         this.opened = false;
       }
 
+      hideElement(element, hide = true) {
+        if (hide)
+          element.setAttribute('style', 'display: none');
+        else
+          element.setAttribute('style', '');
+      }
+
       _updateBlurOveraly(e) {
         document.dispatchEvent(new CustomEvent('dialog-overlay', {detail: {blur: this.opened}}));
       }
     }
-    
+
     window.customElements.define(CardInfo.is, CardInfo);
   </script>
 </dom-module>

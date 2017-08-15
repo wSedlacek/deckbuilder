@@ -63,12 +63,12 @@
 
     <div class="card" id="card">
         <div class="count">
-          <paper-icon-button disabled id="removeCard" icon="remove" on-tap="minusOne"></paper-icon-button>
-          <p class="inline">[[count]]</p>
+          <paper-icon-button id="removeCard" icon="remove" on-tap="minusOne"></paper-icon-button>
+          <p class="inline">[[card.count]]</p>
           <paper-icon-button id="addCard" icon="add" on-tap="plusOne"></paper-icon-button>
         </div>
         <div id="name">
-          <h4 class="inline">[[name]]</h4>        
+          <h4 class="inline">[[card.name]]</h4>
         </div>
         <div class="clear">
           <div class="right-algin">
@@ -82,59 +82,44 @@
   <script>
     class YGOCard extends Polymer.Element {
       static get is() { return 'ygo-card'; }
-      
+
       ready(){
         super.ready();
-        this.name = this.card.name;
-        this.$.name.setAttribute('style', 'color: '+ this.color);
-        document.addEventListener(this.deck + '-update-count-' + this.name, e => this.updateCount(e));
+        document.addEventListener('update-count', e => this.updateCount(e));
       }
 
       updateCount(e) {
-        this.count = e.detail.count;
-        if (this.count == 3) Polymer.dom( this.$.addCard ).setAttribute('disabled','');
-        if (this.count > 1) Polymer.dom( this.$.removeCard ).removeAttribute('disabled');
+        if(e.detail.card.name != this.card.name ||
+           e.detail.card.deck != this.card.deck) return;
+        this.card.count = e.detail.count;
+        this.notifyPath('card.count');
       }
 
       minusOne(e) {
-        if (this.count > 1) {
-          this.count--;
-          document.dispatchEvent(new CustomEvent('remove-card', {detail: {card: this}}));
-          if (this.count == 1) this.$.removeCard.setAttribute('disabled','');
-          if (this.count < 3) this.$.addCard.removeAttribute('disabled');
+        if (this.card.count > 1) {
+          this.card.count--;
+          this.notifyPath('card.count');
+          document.dispatchEvent(new CustomEvent('remove-card-from-' + this.card.deck, {detail: {card: this.card}}));
         }
       }
 
       plusOne(e) {
-        if (this.count < 3) {
-          this.count++;
-          document.dispatchEvent(new CustomEvent('create-card', {detail: {card: this.name, deck: this.deck}}));
-          if (this.count == 3) Polymer.dom( this.$.addCard ).setAttribute('disabled','');
-          if (this.count > 1) Polymer.dom( this.$.removeCard ).removeAttribute('disabled');
+        if (this.card.count < 3) {
+          this.card.count++;
+          this.notifyPath('card.count');
+          document.dispatchEvent(new CustomEvent('add-card', {detail: {card: this.card.name, deck: this.card.deck}}));
         }
       }
 
       clearCard(e) {
-        document.dispatchEvent(new CustomEvent('clear-card-from-' + this.deck, {detail: {card: this}}));
+        document.dispatchEvent(new CustomEvent('clear-card-from-' + this.card.deck, {detail: {reference: this, card: this.card}}));
       }
 
       static get properties() {
         return {
           card: {
             type: Object,
-            value: function() { return {} }
-          },
-          name: {
-            type: String,
-            value: 'Unknown Card'
-          },
-          count: {
-            type: Number,
-            value: '1'
-          },
-          deck: {
-            type: String,
-            value: 'main'
+            value: function() { return { name: 'Unknown Card'}}
           }
         };
       }

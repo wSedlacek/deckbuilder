@@ -19,7 +19,7 @@
         padding: 0px;
       }
       :host > ::slotted(*) {
-        margin-top: 0px; 
+        margin-top: 0px;
       }
       paper-dialog {
         max-width: 90%;
@@ -55,15 +55,15 @@
       </div>
       <div id="text">
         <paper-input always-float-label label="Name of Deck" value="{{deckName}}"></paper-input>
-        <paper-textarea always-float-label label="Card Names or Card IDs"rows="10" max-rows="10" value="{{cardsToAdd}}"></paper-textarea>
+        <paper-textarea always-float-label label="Card Names or Card IDs" rows="8" max-rows="8" value="{{cardsToAdd}}" autofocus></paper-textarea>
       </div>
       <div id="file" style="display: none;">
-        <paper-input readOnly always-float-label label="YDK File" on-tap="_triggerFilePicker" value="{{deckName}}"></paper-input>
+        <paper-input readOnly always-float-label label="YDK File" on-click="_triggerFilePicker" value="{{deckName}}"></paper-input>
         <paper-input style="display: none;" type="file" id="ydkpicker" accepted="*.ydk" on-change="_load"></paper-input>
       </div>
       <div id="buttons" class="buttons">
-        <paper-button on-tap="_cancel">Cancel</paper-button>
-        <paper-button on-tap="_submit">Upload</paper-button>
+        <paper-button on-click="_cancel">Cancel</paper-button>
+        <paper-button on-click="_submit">Upload</paper-button>
       </div>
     </paper-dialog>
   </template>
@@ -76,7 +76,7 @@
           cardsToAdd: {
             type: String,
             value: ''
-          }, 
+          },
           deckName: {
             type: String,
             value: ''
@@ -121,7 +121,7 @@
         this.$.text.setAttribute('style', this.selected == 0 ? 'display: block;' : 'display: none;');
         this.$.file.setAttribute('style', this.selected == 1 ? 'display: block;' : 'display: none;');
       }
-      
+
       _triggerFilePicker(e) {
         this.$.ydkpicker.inputElement.inputElement.click();
       }
@@ -133,7 +133,7 @@
         if (ydkpicker.files[0]) {
           this.deckName = this.$.ydkpicker.inputElement.inputElement.value
             .replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, "");
-          
+
           var reference = this;
           reader.onload = function(e) {
             if(e.target.readyState != 2) return;
@@ -142,7 +142,7 @@
                 return;
             }
             var lines = e.target.result.split('\n');
-            var flitered = ""; 
+            var flitered = "";
             for(var i = 0;i < lines.length;i++){
               var line = lines[i].replace(/,\s*$/, "");
               var filter = false;
@@ -165,9 +165,9 @@
         var deck = "main";
         for(var i = 0;i < lines.length;i++) {
           var line = lines[i].replace(/,\s*$/, "");
-          if (line == "#main") deck = "main";
-          else if (line == "#extra") deck = "extra";
-          else if (line == "!side") deck = "side";
+          if (line.includes("#main")) deck = "main";
+          else if (line.includes("#extra")) deck = "extra";
+          else if (line.includes("!side")) deck = "side";
           else {
             var count = 1;
             var ignoreChars = this._getCharsToIgnore(line);
@@ -176,7 +176,7 @@
               line = line.substr(ignoreChars);
             }
             for (var j = 0; j < count; j++) {
-              document.dispatchEvent(new CustomEvent('create-card', {detail: {card: line, deck: deck}}));
+              document.dispatchEvent(new CustomEvent('add-card', {detail: {card: line, deck: deck}}));
             }
           }
         }
@@ -194,7 +194,7 @@
         return ignore;
       }
     }
-    
+
     window.customElements.define(AddBulk.is, AddBulk);
   </script>
 </dom-module>

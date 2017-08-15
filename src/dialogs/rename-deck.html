@@ -17,7 +17,7 @@
         padding: 0px;
       }
       :host > ::slotted(*) {
-        margin-top: 0px; 
+        margin-top: 0px;
       }
       paper-dialog {
         max-width: 90%;
@@ -43,7 +43,9 @@
       <div id="header">
         <h>DECK NAME</h>
       </div>
-      <paper-input always-float-label label="Name of Deck" value="{{deckName}}" on-keydown="_keyDown"></paper-input>
+      <paper-input id="input"always-float-label label="Name of Deck"
+                   value="{{deckName}}" on-keydown="_keyDown"
+                   autofocus></paper-input>
       <div id="buttons" class="buttons">
         <paper-button on-tap="_cancel">Cancel</paper-button>
         <paper-button on-tap="_submit">Rename</paper-button>
@@ -74,8 +76,9 @@
       }
 
       show(e) {
-        this.deckName = "";
+        this.deckName = e.detail.deckname;
         this.opened = true;
+        this.$.input.focus();
       }
 
       hide(e) {
@@ -102,7 +105,7 @@
         }
       }
     }
-    
+
     window.customElements.define(RenameDeck.is, RenameDeck);
   </script>
 </dom-module>

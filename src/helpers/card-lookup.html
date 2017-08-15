@@ -1,0 +1,67 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="card-lookup">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+    </style>
+  </template>
+
+  <script>
+    class CardLookup extends Polymer.Element {
+      static get is() { return 'card-lookup'; }
+
+      static get properties() {
+        return {
+          apiUrl: {
+            type: String,
+            value: "http://ygodb.pe.hu/api/api.php/search?"
+          }
+        };
+      }
+
+      ready() {
+        super.ready();
+      }
+
+      isID (o) {
+        return ! isNaN (o-0) && o !== null && o !== "" && o !== false;
+      }
+
+      isName (o) {
+        return isNaN (o) && o !== null && o !== "" && o !== false;
+      }
+
+      lookupCardAndAdd(lookup, deck) {
+        var apiSearch = "";
+        if (this.isID(lookup.search)) {
+          apiSearch = "id";
+        } else if (this.isName(lookup.search)) {
+          apiSearch = "name";
+        }
+
+        var url = this.apiUrl + apiSearch + "=" + lookup.search;
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            var card = JSON.parse(xhr.responseText);
+            card.deck = lookup.deck;
+            deck.addCard(card);
+            document.dispatchEvent(new CustomEvent('card-found', {detail: {card: card}}));
+          } else if (xhr.readyState == 4) {
+            deck.addingCard = false;
+            document.dispatchEvent(new CustomEvent('card-not-found', {detail: {card: card}}));
+          }
+        };
+        xhr.send();
+      }
+    }
+
+    window.customElements.define(CardLookup.is, CardLookup);
+  </script>
+</dom-module>

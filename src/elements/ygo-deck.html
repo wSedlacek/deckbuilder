@@ -23,7 +23,7 @@
     </style>
     <div id="deck" class="card">
       <div id="header">
-        <h>[[deck]] Deck</h>
+        <h>[[deck]] Deck - [[count]]</h>
         <hr>
         <h2 id="empty">Empty Deck</h2>
       </div>
@@ -38,6 +38,10 @@
           deck: {
             type: String,
             value: 'main'
+          },
+          count: {
+            type: Number,
+            value: 0
           }
         };
       }
@@ -45,6 +49,7 @@
       ready() {
         super.ready();
         document.addEventListener('add-card-to-' + this.deck, e => this.addCard(e));
+        document.addEventListener('update-count-for-' + this.deck, e => this.updateCount(e));
         document.addEventListener('clear-card-from-' + this.deck, e => this.clearCard(e));
         document.addEventListener('clear-all-decks', e => this.clearAllCards(e));
         this.Deck = this.deck.replace(/\b./g, function(m){ return m.toUpperCase(); });
@@ -56,14 +61,18 @@
         var card   = document.createElement('ygo-card');
         var type;
         card.card  = e.detail.card;
-        card.count = 1;
-        card.deck  = this.deck;
+        card.card.count = 1;
+        card.card.deck  = this.deck;
         deck.appendChild(card);
+      }
+
+      updateCount(e) {
+        this.count = e.detail.count;
       }
 
       clearCard(e) {
         var deck = this.$.deck;
-        deck.removeChild(e.detail.card);
+        deck.removeChild(e.detail.reference);
         if ([].slice.call(this.$.deck.children).length <= 1)
           this.$.empty.setAttribute('style','display: block;');
       }

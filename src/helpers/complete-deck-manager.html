@@ -1,0 +1,92 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="deck-manager.html">
+<link rel="import" href="card-lookup.html">
+
+<dom-module id="complete-deck-manager">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+    </style>
+    <deck-manager id="main"  limit="60"></deck-manager>
+    <deck-manager id="extra" limit="15"></deck-manager>
+    <deck-manager id="side"  limit="15"></deck-manager>
+    <card-lookup  id="lookup"></card-lookup>
+  </template>
+
+  <script>
+    class CompleteDeckManager extends Polymer.Element {
+      static get is() { return 'complete-deck-manager'; }
+      ready() {
+        super.ready();
+        document.addEventListener('add-card', e => this.addCard(e));
+        document.addEventListener('download-ydk', e => this.downloadYDK(e));
+      }
+
+      addCard(e, reference = this) {
+        if(e.detail.card.trim().length == 0) return;
+
+        var deckType = reference.spliceExtraDeck(e.detail.card, e.detail.deck);
+        var deck = reference.getDeck(deckType);
+        var lookup = reference.$.lookup;
+
+        if(deck.addingCard) {
+          window.setTimeout(reference.addCard, 10, e, reference);
+        } else {
+          deck.addingCard = true;
+          var cardClone = deck.findCardInDeck(e.detail.card);
+          if (cardClone != null) {
+            deck.addCard(cardClone);
+          } else {
+            lookup.lookupCardAndAdd({search: e.detail.card, deck: deckType}, deck);
+          }
+        }
+      }
+
+      getDeck(deck) {
+        switch(deck) {
+          case "main": return this.$.main;
+          case "extra": return this.$.extra;
+          case "side": return this.$.side;
+        }
+      }
+
+      isExtraDeckMonster(card) {
+        if (card.allTypes) {
+          for (var i = 0; i < card.allTypes.length; i++) {
+            if (card.allTypes[i] == "Fusion" || card.allTypes[i] == "Link" || card.allTypes[i] == "Synchro" || card.allTypes[i] == "Xyz") return true;
+          }
+        }
+        return false;
+      }
+
+      spliceExtraDeck(card, deck) {
+        return this.isExtraDeckMonster(card) && deck == "main" ? "extra": deck;
+      }
+
+      downloadYDK(e) {
+        var textToSave = this.createYDK();
+        var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+        var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+        var fileNameToSaveAs = e.detail.deckname + ".ydk";
+
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.href = textToSaveAsURL;
+        downloadLink.style.display = "none";
+
+        downloadLink.click();
+      }
+
+      createYDK() {
+        var prefix = "#Created by Ultimate Deck Builder\n";
+        return prefix + this.$.main.createYDK()+ this.$.extra.createYDK()+ this.$.side.createYDK();
+      }
+    }
+
+    window.customElements.define(CompleteDeckManager.is, CompleteDeckManager);
+  </script>
+</dom-module>
