@@ -1,0 +1,22 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../helpers/shared-styles.html">
+
+<dom-module id="deck-pricing">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+    </style>
+
+  </template>
+
+  <script>
+    class DeckPricing extends Polymer.Element {
+      static get is() { return 'deck-pricing'; }
+    }
+
+    window.customElements.define(DeckPricing.is, DeckPricing);
+  </script>
+</dom-module>

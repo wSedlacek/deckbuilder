@@ -1,5 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
@@ -15,15 +15,24 @@
       }
       #addCardInput {
         display: inline-block;
-        width: 100%;
+        width: -webkit-fill-available;
       }
       #sideDeckToggle {
-        display: inline-block;
-        width: 46px;
+        display: table;
+      }
+      h5 {
+        margin: 0;
+        font-weight: lighter;
       }
       #addCardButton {
-        float: right;
+        position: absolute;
+        display: inline-block;
+        bottom: 1px;
+        right: 3px;
         width: 40px;
+      }
+      .card {
+        position: relative;
       }
       .deck {
         width: 100%;
@@ -54,7 +63,7 @@
                   value="{{cardToAdd}}"
                   autofocus>
       </paper-input>
-      <paper-toggle-button id="sideDeckToggle" checked="{{useSideDeck}}" on-click="_toggleShiftForSideDeck"></paper-toggle-button>
+      <paper-checkbox id="sideDeckToggle" checked="{{useSideDeck}}" on-click="_toggleShiftForSideDeck"><h5>Side Deck</h5></paper-checkbox>
       <paper-icon-button id="addCardButton" icon="add" on-click="_addCard"></paper-icon-button>
     </div>
     <div class="deck" id="main">

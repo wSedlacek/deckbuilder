@@ -1,0 +1,54 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../helpers/shared-styles.html">
+
+<dom-module id="card-search">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+      #addCardInput {
+        display: inline-block;
+        width: -webkit-fill-available;
+      }
+      #addCardButton {
+        position: absolute;
+        display: inline-block;
+        top: 33%;
+        right: 10px;
+        width: 40px;
+      }
+      .card {
+        position: relative;
+      }
+    </style>
+    <div class="card">
+      <paper-input id="addCardInput"
+                  always-float-label
+                  label="Enter a Card Name or ID"
+                  on-keydown="_keyDown"
+                  value="{{cardToAdd}}"
+                  autofocus>
+      </paper-input>
+      <paper-icon-button id="addCardButton" icon="search" on-click="_search"></paper-icon-button>
+    </div>
+  </template>
+
+  <script>
+    var enter = 13;
+    class CardSearch extends Polymer.Element {
+      static get is() { return 'card-search'; }
+
+      _keyDown(e) {
+        if (e.keyCode == enter) {
+          this._search(e);
+        }
+      }
+    }
+
+    window.customElements.define(CardSearch.is, CardSearch);
+  </script>
+</dom-module>
