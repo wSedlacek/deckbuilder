@@ -58,7 +58,7 @@
             deck.addCard(cardClone);
             if (bulk) reference.bulkProcessed++;
           } else {
-            lookup.lookupCardAndAdd({search: e.detail.card, deck: deckType, bulk: bulk}, deck, reference);
+            lookup.lookupCard({search: e.detail.card, deck: deckType, bulk: bulk}, deck, reference);
           }
         }
       }

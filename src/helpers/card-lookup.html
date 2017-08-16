@@ -24,10 +24,6 @@
         };
       }
 
-      ready() {
-        super.ready();
-      }
-
       isID (o) {
         return ! isNaN (o-0) && o !== null && o !== "" && o !== false;
       }
@@ -36,7 +32,7 @@
         return isNaN (o) && o !== null && o !== "" && o !== false;
       }
 
-      lookupCardAndAdd(lookup, deck, bulkcounter) {
+      lookupCard(lookup, output, bulkcounter = null) {
         var apiSearch = "";
         if (this.isID(lookup.search)) {
           apiSearch = "id";
@@ -51,11 +47,11 @@
           if (xhr.readyState == 4 && xhr.status == 200) {
             var card = JSON.parse(xhr.responseText);
             card.deck = lookup.deck;
-            deck.addCard(card);
+            output.card = card;
             if (lookup.bulk) bulkcounter.bulkProcessed++;
             document.dispatchEvent(new CustomEvent('card-found', {detail: {card: card}}));
           } else if (xhr.readyState == 4) {
-            deck.addingCard = false;
+            output.addingCard = false;
             if (lookup.bulk) bulkcounter.bulkProcessed++;
             document.dispatchEvent(new CustomEvent('card-not-found', {detail: {card: card}}));
           }

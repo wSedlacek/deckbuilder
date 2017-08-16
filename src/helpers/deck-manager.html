@@ -21,6 +21,11 @@
             type: Boolean,
             value: false
           },
+          card: {
+            type: Object,
+            value: function() { return {} },
+            observer: 'addCard'
+          },
           deck: {
             type: Array,
             value: function () { return []; }
@@ -42,7 +47,8 @@
         document.addEventListener('clear-card-from-' + this.id, e => this.clearCard(e));
       }
 
-      addCard(card) {
+      addCard(card, ignore) {
+        if (card.name == null) return;
         this.addingCard = true;
         var count = 0;
         this.deck.forEach(function(currentCard) {

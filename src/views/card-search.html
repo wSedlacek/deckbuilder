@@ -30,10 +30,14 @@
                   always-float-label
                   label="Enter a Card Name or ID"
                   on-keydown="_keyDown"
-                  value="{{cardToAdd}}"
+                  value="{{cardToSearch}}"
                   autofocus>
       </paper-input>
       <paper-icon-button id="addCardButton" icon="search" on-click="_search"></paper-icon-button>
+    </div>
+    <div class="card">
+      <card-lookup  id="lookup"></card-lookup>
+      <ygo-card-info id="info" header></ygo-card-info>
     </div>
   </template>
 
@@ -41,11 +45,23 @@
     var enter = 13;
     class CardSearch extends Polymer.Element {
       static get is() { return 'card-search'; }
+      static get properties() {
+        return {
+          cardToSearch: {
+            type: String,
+            value: ''
+          }
+        };
+      }
 
       _keyDown(e) {
         if (e.keyCode == enter) {
           this._search(e);
         }
+      }
+
+      _search(e) {
+        this.$.lookup.lookupCard({search: this.cardToSearch} , this.$.info);
       }
     }
 
