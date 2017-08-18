@@ -11,6 +11,8 @@
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+
 
 <link rel="import" href="deck-editor.html">
 <link rel="import" href="deck-preview.html">
@@ -104,14 +106,8 @@
         <app-header-layout has-scrolling-region>
 
           <app-header slot="header" condenses reveals effects="waterfall">
-            <app-toolbar>
-              <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-              <paper-icon-button icon="create" on-click="_showRenameDeck"></paper-icon-button>
-              <div main-title>{{deckname}}</div>
-              <paper-icon-button icon="sort" on-tap="_sortAllDecks"></paper-icon-button>
-              <paper-icon-button icon="file-upload" on-click="_showAddBulk"></paper-icon-button>
-              <paper-icon-button icon="file-download" on-click="_downloadYDK"></paper-icon-button>
-              <paper-icon-button icon="delete" on-click="_clearAllDecks"></paper-icon-button>
+            <app-toolbar id="actionMenu">
+              <paper-icon-button id="drawerMenu" icon="menu" drawer-toggle></paper-icon-button>
             </app-toolbar>
           </app-header>
 
@@ -155,7 +151,8 @@
           },
           deckname: {
             type: String,
-            value: 'Untitled'
+            value: 'Untitled',
+            observer: '_populateActionMenu'
           },
           routeData: Object,
           subroute: String,
@@ -173,6 +170,8 @@
 
       ready() {
         super.ready();
+        var reference = this;
+        window.onresize = function() {reference._populateActionMenu();};
         document.addEventListener('dialog-overlay', e => this._blurBackground(e));
         document.addEventListener('rename-deck', e => this._renameDeck(e));
       }
@@ -198,6 +197,103 @@
             true);
       }
 
+      _populateActionMenu() {
+        while (this.$.actionMenu.childNodes.length > 2) {
+          this.$.actionMenu.removeChild(this.$.actionMenu.lastChild);
+        }
+
+        var items = [
+          {
+            name: 'Rename Deck',
+            icon: 'create',
+            onclick: this._showRenameDeck,
+            beforeName: true,
+            overflowPiority: 1
+          },
+          {
+            name: 'Sort Deck',
+            icon: 'sort',
+            onclick: this._sortAllDecks,
+            beforeName: false,
+            overflowPiority: 1
+          },
+          {
+            name: 'Add Cards',
+            icon: 'file-upload',
+            onclick: this._showAddBulk,
+            beforeName: false,
+            overflowPiority: 3
+          },
+          {
+            name: 'Download Deck',
+            icon: 'file-download',
+            onclick: this._downloadYDK,
+            beforeName: false,
+            overflowPiority: 3
+          },
+          {
+            name: 'Clear Deck',
+            icon: 'delete',
+            onclick: this._clearAllDecks,
+            beforeName: false,
+            overflowPiority: 4
+          }
+        ]
+
+        var width = window.innerWidth
+        || document.documentElement.clientWidth
+        || document.body.clientWidth;
+        var overflow = 0;
+        while (width < 800) {
+          width+=180;
+          overflow++;
+        }
+
+        var isBeforeName = true;
+        var overlowMenu = [];
+        items.forEach(function(item) {
+          if (!item.beforeName && isBeforeName) {
+            var name = document.createElement('div');
+            name.setAttribute('main-title', '');
+            name.innerHTML = this.deckname;
+            this.$.actionMenu.appendChild(name);
+            isBeforeName = false;
+          }
+          if (item.overflowPiority > overflow) {
+            var menuItem     = document.createElement('paper-icon-button');
+            menuItem.icon    = item.icon;
+            menuItem.onclick = item.onclick;
+            this.$.actionMenu.appendChild(menuItem);
+          } else {
+            overlowMenu.push(item);
+          }
+        }, this);
+
+        if (overlowMenu[0] != null) {
+          var overflowMenuContainer = document.createElement('paper-menu-button');
+          overflowMenuContainer.setAttribute('horizontal-align', 'right');
+          overflowMenuContainer.setAttribute('vertical-align', 'bottom');
+          overflowMenuContainer.style = 'padding: 0;'
+          var overflowMenuButton    = document.createElement('paper-icon-button');
+          overflowMenuButton.icon   = 'more-vert';
+          overflowMenuButton.slot   = 'dropdown-trigger';
+          overflowMenuButton.alt    = 'menu align';
+          var overflowMenuList      = document.createElement('div');
+          overflowMenuList.slot     = 'dropdown-content';
+          overflowMenuList.style    = 'position: fixed; top: 10px; right: 20px; box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2); border-radius: 2px;background-color: #fff;'
+          overlowMenu.forEach(function(item) {
+            var menuItem       = document.createElement('paper-button');
+            menuItem.innerHTML = item.name;
+            menuItem.onclick   = function(){item.onclick(); overflowMenuContainer.close();}
+            menuItem.style = "display: block; text-align: center; color: #000; font-size: 14px;"
+            overflowMenuList.appendChild(menuItem);
+          }, this);
+          overflowMenuContainer.appendChild(overflowMenuButton);
+          overflowMenuContainer.appendChild(overflowMenuList);
+          this.$.actionMenu.appendChild(overflowMenuContainer);
+        }
+      }
+
       _showPage404() {
         this.page = 'error-404';
       }
@@ -220,7 +316,7 @@
 
       _clearAllDecks() {
         document.dispatchEvent(new CustomEvent('clear-all-decks'));
-        this.deckname = "Untitled";
+        document.dispatchEvent(new CustomEvent('rename-deck', {detail: {deckname: "Untitled"}}));
       }
 
       _blurBackground(e) {
@@ -230,7 +326,8 @@
       }
 
       _renameDeck(e) {
-        this.deckname = e.detail.deckname;
+        if (e.detail.deckname != null)
+          this.deckname = e.detail.deckname;
       }
     }
 
