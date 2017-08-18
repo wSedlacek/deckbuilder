@@ -21,6 +21,9 @@
         right: 10px;
         width: 40px;
       }
+      #search {
+        display: none;
+      }
       .card {
         position: relative;
       }
@@ -35,7 +38,7 @@
       </paper-input>
       <paper-icon-button id="addCardButton" icon="search" on-click="_search"></paper-icon-button>
     </div>
-    <div class="card">
+    <div class="card" id="search">
       <card-lookup  id="lookup"></card-lookup>
       <ygo-card-info id="info" header></ygo-card-info>
     </div>
@@ -57,6 +60,7 @@
       _keyDown(e) {
         if (e.keyCode == enter) {
           this._search(e);
+          this.$.search.style = "display: block";
         }
       }
 

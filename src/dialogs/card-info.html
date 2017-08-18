@@ -25,7 +25,7 @@
         max-width: 90%;
         max-height: 90%;
       }
-      #header{
+      #header {
         text-align: center;
         margin: 0px;
         align-items: flex-end;
@@ -48,7 +48,9 @@
         <h>[[header]]</h>
         <paper-icon-button icon="clear" on-click="hide"></paper-icon-button>
       </div>
-      <ygo-card-info id="info"></ygo-card-info>
+      <div id="body">
+        <ygo-card-info id="info"></ygo-card-info>
+      </div>
     </paper-dialog>
   </template>
 
@@ -77,9 +79,13 @@
 
       show(e) {
         var reference = this;
-        this.header = e.detail.card.name + " [" + e.detail.card.ids[0] + "] - $" + e.detail.card.price;
-        this.$.info.card = e.detail.card;
-        this.$.info.$.img.onload = function() { reference.opened = true };
+        this.header = e.detail.card.name + " [" + e.detail.card.ids[0] + "]";
+        if (this.$.info.card == e.detail.card) {
+          reference.opened = true;
+        } else {
+          this.$.info.card = e.detail.card;
+          this.$.info.$.img.onload = function() { reference.opened = true };
+        }
       }
 
       hide(e) {

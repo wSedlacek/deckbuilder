@@ -86,6 +86,7 @@
       ready(){
         super.ready();
         document.addEventListener('update-count', e => this.updateCount(e));
+        document.addEventListener('clear-card-' + this.card.name + "-from-" + this.card.deck, e => this.clearCard(e));
       }
 
       updateCount(e) {

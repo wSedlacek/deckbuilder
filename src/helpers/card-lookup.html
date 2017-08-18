@@ -32,7 +32,7 @@
         return isNaN (o) && o !== null && o !== "" && o !== false;
       }
 
-      lookupCard(lookup, output, bulkcounter = null) {
+      lookupCard(lookup, output) {
         var apiSearch = "";
         if (this.isID(lookup.search)) {
           apiSearch = "id";
@@ -43,20 +43,34 @@
         var url = this.apiUrl + apiSearch + "=" + lookup.search;
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
+        var lookupReference = this;
         xhr.onreadystatechange = function () {
           if (xhr.readyState == 4 && xhr.status == 200) {
             var card = JSON.parse(xhr.responseText);
-            card.deck = lookup.deck;
+            card.deck = lookupReference.spliceExtraDeck(card, lookup.deck);
             output.card = card;
-            if (lookup.bulk) bulkcounter.bulkProcessed++;
+            if (lookup.bulk) output.bulkProcessed++;
             document.dispatchEvent(new CustomEvent('card-found', {detail: {card: card}}));
           } else if (xhr.readyState == 4) {
             output.addingCard = false;
-            if (lookup.bulk) bulkcounter.bulkProcessed++;
+            if (lookup.bulk) output.bulkProcessed++;
             document.dispatchEvent(new CustomEvent('card-not-found', {detail: {card: card}}));
           }
         };
         xhr.send();
+      }
+
+      isExtraDeckMonster(card) {
+        if (card.allTypes) {
+          for (var i = 0; i < card.allTypes.length; i++) {
+            if (card.allTypes[i] == "Fusion" || card.allTypes[i] == "Link" || card.allTypes[i] == "Synchro" || card.allTypes[i] == "Xyz") return true;
+          }
+        }
+        return false;
+      }
+
+      spliceExtraDeck(card, deck) {
+        return this.isExtraDeckMonster(card) && deck == "main" ? "extra": deck;
       }
     }
 

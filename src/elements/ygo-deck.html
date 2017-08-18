@@ -52,6 +52,7 @@
         document.addEventListener('update-count-for-' + this.deck, e => this.updateCount(e));
         document.addEventListener('clear-card-from-' + this.deck, e => this.clearCard(e));
         document.addEventListener('clear-all-decks', e => this.clearAllCards(e));
+        document.addEventListener('clear-all-decks-from-' + this.deck, e => this.clearAllCards(e));
         this.Deck = this.deck.replace(/\b./g, function(m){ return m.toUpperCase(); });
       }
 

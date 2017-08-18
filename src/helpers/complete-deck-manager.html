@@ -22,6 +22,15 @@
       static get is() { return 'complete-deck-manager'; }
       static get properties() {
         return {
+          addingCard: {
+            type: Boolean,
+            value: false
+          },
+          card: {
+            type: Object,
+            value: function() { return {} },
+            observer: 'processCard'
+          },
           bulkProcessed: {
             type: Number,
             value: 0,
@@ -44,29 +53,35 @@
       addCard(e, reference = this) {
         if(e.detail.card.trim().length == 0) return;
 
-        var deckType = reference.spliceExtraDeck(e.detail.card, e.detail.deck);
-        var deck = reference.getDeck(deckType);
+        var deck = reference.getDeck(e.detail.deck);
         var lookup = reference.$.lookup;
 
-        if(deck.addingCard) {
+        if(reference.addingCard) {
           window.setTimeout(reference.addCard, 10, e, reference);
         } else {
-          deck.addingCard = true;
+          reference.addingCard = true;
           var bulk = e.detail.bulk != null? e.detail.bulk : false;
           var cardClone = deck.findCardInDeck(e.detail.card);
           if (cardClone != null) {
-            deck.addCard(cardClone);
+            deck.addCard(cardClone, reference);
             if (bulk) reference.bulkProcessed++;
           } else {
-            lookup.lookupCard({search: e.detail.card, deck: deckType, bulk: bulk}, deck, reference);
+            lookup.lookupCard({search: e.detail.card, deck: e.detail.deck, bulk: bulk}, reference);
           }
         }
+      }
+
+      processCard(card, ignore) {
+        if (card.deck == null) return;
+        var deck = this.getDeck(card.deck);
+        deck.addCard(card, this);
       }
 
       countProcessed() {
         if(this.bulkProcessed >= this.bulkTotal && this.bulkTotal != 0) {
           document.dispatchEvent(new CustomEvent('hide-processing-data'));
           this.bulkProcessed = this.bulkTotal = 0;
+          document.dispatchEvent(new CustomEvent('sort-all-decks'));
         }
       }
 
@@ -80,19 +95,6 @@
           case "extra": return this.$.extra;
           case "side": return this.$.side;
         }
-      }
-
-      isExtraDeckMonster(card) {
-        if (card.allTypes) {
-          for (var i = 0; i < card.allTypes.length; i++) {
-            if (card.allTypes[i] == "Fusion" || card.allTypes[i] == "Link" || card.allTypes[i] == "Synchro" || card.allTypes[i] == "Xyz") return true;
-          }
-        }
-        return false;
-      }
-
-      spliceExtraDeck(card, deck) {
-        return this.isExtraDeckMonster(card) && deck == "main" ? "extra": deck;
       }
 
       downloadYDK(e) {

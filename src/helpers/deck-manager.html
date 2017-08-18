@@ -17,15 +17,6 @@
 
       static get properties() {
         return {
-          addingCard: {
-            type: Boolean,
-            value: false
-          },
-          card: {
-            type: Object,
-            value: function() { return {} },
-            observer: 'addCard'
-          },
           deck: {
             type: Array,
             value: function () { return []; }
@@ -45,11 +36,12 @@
         super.ready();
         document.addEventListener('remove-card-from-' + this.id, e => this.removeCard(e));
         document.addEventListener('clear-card-from-' + this.id, e => this.clearCard(e));
+        document.addEventListener('sort-all-decks', e => this.sortDeckT(e));
       }
 
-      addCard(card, ignore) {
+      addCard(card, block = null) {
         if (card.name == null) return;
-        this.addingCard = true;
+        if(block) block.addingCard = true;
         var count = 0;
         this.deck.forEach(function(currentCard) {
           if (card.name == currentCard.name) {
@@ -71,7 +63,7 @@
         } else {
           document.dispatchEvent(new CustomEvent('card-limit', {detail: {card: card}}));
         }
-        this.addingCard = false;
+        if(block) block.addingCard = false;
       }
 
       findCardInDeck(name) {
@@ -112,6 +104,69 @@
           }
         }
         return YDK;
+      }
+
+      sortDeckT(e) {
+        var reference = this;
+        var deck = reference.deck;
+        if (deck[0] == null) return;
+
+        deck.sort(function (a, b) { return reference.cardSort(a,b);});
+
+        var sortedCard = [];
+        deck.forEach(function(card) {
+          sortedCard.push(card);
+        }, this);
+        document.dispatchEvent(new CustomEvent('clear-all-decks-from-' + this.id));
+
+        sortedCard.forEach(function(card) {
+          this.addCard(card);
+        }, this);
+      }
+
+      cardSort(base, test) {
+        var typeSorted = 0;
+        var counter = test.allTypes.length > base.allTypes.length? test.allTypes.length : base.allTypes.length;
+        for(var t = 0; t < counter; t++) {
+          if (base.allTypes[t] == null) return t != 2 && base.allTypes[t-1] != "Effect"? -1 : 1;
+          if (test.allTypes[t] == null) return t != 2 && test.allTypes[t-1] != "Effect"? 1 : -1;
+          typeSorted = this.typeSort(base.allTypes[t], test.allTypes[t]);
+          if (typeSorted != 0) return typeSorted;
+        }
+        if (test.allTypes[t] == "Monster") {
+          if (test.level - base.level != 0) return  test.level - base.level;
+          if (test.atk > base.atk) return -1;
+          if (test.atk < base.atk) return 1;
+          if (test.def > base.def) return -1;
+          if (test.def < base.def) return 1;
+        }
+        if (test.name > base.name) return -1;
+        if (test.name < base.name) return 1;
+        return 0;
+      }
+
+      typeSort(base, test) {
+        if (base == test) return 0;
+        var compare = [base, test];
+        var output = [];
+        compare.forEach(function(convert) {
+          switch (convert) {
+            case "Ritual":  output.push(-6); break;
+            case "Fusion": output.push(-5); break;
+            case "Synchro": output.push(-4); break;
+            case "Xyz": output.push(-3); break;
+            case "Link": output.push(-2); break;
+            case "Monster": output.push(-1); break;
+            case "Continuous": output.push(0); break;
+            case "Counter": output.push(1); break;
+            case "Equip": output.push(2); break;
+            case "Field": output.push(3); break;
+            case "Quick-Play": output.push(4); break;
+            case "Spell": output.push(5); break;
+            case "Trap": output.push(6); break;
+          }
+        }, this);
+        return output[0] - output[1];
       }
     }
 

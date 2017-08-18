@@ -11,6 +11,7 @@
         text-align: center;
         display: block;
         padding: 0px;
+        overflow: auto;
       }
       :host > ::slotted(*) {
         margin-top: 0px;
@@ -23,6 +24,11 @@
       #info {
         width: 50%;
         float: right;
+        overflow: auto;
+      }
+      #effects {
+        overflow: scroll;
+        max-height: 200px
       }
       @media only screen
       and (max-width : 925px) {
@@ -43,6 +49,14 @@
         #img {
           display: none;
         }
+        #stats {
+          width: 50%;
+          float: left;
+        }
+        #effects {
+          width: 50%;
+          float: right;
+        }
       }
       h4 {
         margin:0 15px 5px 0;
@@ -50,24 +64,40 @@
         font-weight: normal;
         font-size: 0.9em;
       }
+      body {
+        display: none;
+        overflow: auto;
+      }
+      not-found {
+        display: block;
+      }
     </style>
-    <div>
-      <img id="img" src="[[imgUrl]][[card.ids.0]][[imgExt]]">
+    <div id="body">
+      <img id="img" src="[[_formatSrc(imgUrl, card.ids.0, imgExt)]]">
       <div id="info">
         <code>
-          <h2 id="header">[[card.name]] [[[card.ids.0]]] - $ [[card.price]]</h2>
-          <h4 id="type">[[card.allTypes.0]] [[card.allTypes.1]] [[card.allTypes.2]] [[card.allTypes.3]]</h4>
-          <h4 id="attribute">Attribute: [[card.attribute]]</h4>
-          <h4 id="race">Race: [[card.race]]</h4>
-          <h4 id="level">Level: [[card.level]]</h4>
-          <h4 id="atk">Attack: [[card.atk]]</h4>
-          <h4 id="def">Defence: [[card.def]]</h4>
-          <h4 id="link">Link: [[card.link]]</h4>
-          <h4 id="pendulum">Scales: [[card.leftPendulumScale]] &#60;&#62; [[card.rightPendulumScale]]</h4>
-          <h4 id="pendulumEffect">Pendulum Effect: [[card.pendulumEffect]]</h4>
-          <h4 id="effect">Effect: [[card.effect]]</h4>
+          <h2 id="header">[[card.name]] [[[card.ids.0]]]</h2>
+          <div id="stats">
+            <h4 id="type"><b>[[card.allTypes.0]] [[card.allTypes.1]] [[card.allTypes.2]] [[card.allTypes.3]]</b></h4>
+            <h4 id="attribute"><b>Attribute:</b> [[card.attribute]]</h4>
+            <h4 id="race"><b>Race:</b> [[card.race]]</h4>
+            <h4 id="level"><b>Level:</b> [[card.level]]</h4>
+            <h4 id="atk"><b>Attack:</b> [[card.atk]]</h4>
+            <h4 id="def"><b>Defence:</b> [[card.def]]</h4>
+            <h4 id="link"><b>Link:</b> [[card.link]]</h4>
+            <h4 id="pendulum"><b>Scales:</b> [[card.leftPendulumScale]] &#60;&#62; [[card.rightPendulumScale]]</h4>
+            <h4 id="price"><b>Price:</b> [[card.price]]</h4>
+            <br>
+          </div>
+          <div id="effects">
+            <h4 id="pendulumEffect"><b>Pendulum Effect:</b> [[card.pendulumEffect]]</h4>
+            <h4 id="effect"><b>Effect:</b> [[card.effect]]</h4>
+          </div>
         </code>
       </div>
+    </div>
+    <div id="notfound">
+      <h1>Card Not Found</h1>
     </div>
   </template>
 
@@ -99,11 +129,18 @@
       }
 
       displayHeader(header) {
-        this.$.header.setAttribute('style', header ? '' : 'display: none;');
+        this.$.header.style =  header ? '' : 'display: none;';
       }
 
       onCardChange() {
-        if (this.card.name == null) return;
+        if (this.card.name == null) {
+          this.$.body.style = 'display: none;';
+          this.$.notfound.style = '';
+          return;
+        } else {
+          this.$.body.style = '';
+          this.$.notfound.style = 'display: none;';
+        }
         var monster;
         var pendulum;
         var link;
@@ -141,6 +178,7 @@
           this.hideElement(this.$.level);
           this.hideElement(this.$.atk);
           this.hideElement(this.$.def);
+          this.hideElement(this.$.link);
           this.hideElement(this.$.pendulum);
           this.hideElement(this.$.pendulumEffect);
         }
@@ -148,9 +186,13 @@
 
       hideElement(element, hide = true) {
         if (hide)
-          element.setAttribute('style', 'display: none');
+          element.style = 'display: none';
         else
-          element.setAttribute('style', '');
+          element.style = '';
+      }
+
+      _formatSrc(imgUrl, id, imgExt) {
+        return id ? `${imgUrl}${id}${imgExt}` : '';
       }
     }
 
