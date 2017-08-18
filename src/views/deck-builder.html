@@ -10,9 +10,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
-
+<link rel="import" href="../elements/action-bar.html">
 
 <link rel="import" href="deck-editor.html">
 <link rel="import" href="deck-preview.html">
@@ -106,8 +104,9 @@
         <app-header-layout has-scrolling-region>
 
           <app-header slot="header" condenses reveals effects="waterfall">
-            <app-toolbar id="actionMenu">
+            <app-toolbar>
               <paper-icon-button id="drawerMenu" icon="menu" drawer-toggle></paper-icon-button>
+              <action-bar></action-bar>
             </app-toolbar>
           </app-header>
 
@@ -144,59 +143,10 @@
 
       static get properties() {
         return {
-          menuItems: {
-            type: Array,
-            value: function(){
-              return [
-                {
-                  name: 'Rename Deck',
-                  icon: 'create',
-                  onclick: this._showRenameDeck,
-                  beforeName: true,
-                  overflowPiority: 1
-                },
-                {
-                  name: 'Sort Deck',
-                  icon: 'sort',
-                  onclick: this._sortAllDecks,
-                  beforeName: false,
-                  overflowPiority: 1
-                },
-                {
-                  name: 'Add Cards',
-                  icon: 'file-upload',
-                  onclick: this._showAddBulk,
-                  beforeName: false,
-                  overflowPiority: 3
-                },
-                {
-                  name: 'Download Deck',
-                  icon: 'file-download',
-                  onclick: this._downloadYDK,
-                  beforeName: false,
-                  overflowPiority: 3
-                },
-                {
-                  name: 'Clear Deck',
-                  icon: 'delete',
-                  onclick: this._clearAllDecks,
-                  beforeName: false,
-                  overflowPiority: 4
-                }
-              ];
-            }
-          },
-
-
           page: {
             type: String,
             reflectToAttribute: true,
             observer: '_pageChanged',
-          },
-          deckname: {
-            type: String,
-            value: 'Untitled',
-            observer: '_populateActionMenu'
           },
           routeData: Object,
           subroute: String,
@@ -214,10 +164,7 @@
 
       ready() {
         super.ready();
-        var reference = this;
-        window.onresize = function() {reference._populateActionMenu();};
         document.addEventListener('dialog-overlay', e => this._blurBackground(e));
-        document.addEventListener('rename-deck', e => this._renameDeck(e));
       }
 
       _routePageChanged(page) {
@@ -241,104 +188,14 @@
             true);
       }
 
-      _populateActionMenu() {
-        if (this.menuItems == null) return;
-
-        while (this.$.actionMenu.childNodes.length > 2) {
-          this.$.actionMenu.removeChild(this.$.actionMenu.lastChild);
-        }
-
-        var width = window.innerWidth
-        || document.documentElement.clientWidth
-        || document.body.clientWidth;
-        var overflow = 0;
-        while (width < 800) {
-          width+=180;
-          overflow++;
-        }
-
-        var isBeforeName = true;
-        var overlowMenu = [];
-        this.menuItems.forEach(function(item) {
-          if (!item.beforeName && isBeforeName) {
-            var name = document.createElement('div');
-            name.setAttribute('main-title', '');
-            name.innerHTML = this.deckname;
-            this.$.actionMenu.appendChild(name);
-            isBeforeName = false;
-          }
-          if (item.overflowPiority > overflow) {
-            var menuItem     = document.createElement('paper-icon-button');
-            menuItem.icon    = item.icon;
-            menuItem.onclick = item.onclick;
-            this.$.actionMenu.appendChild(menuItem);
-          } else {
-            overlowMenu.push(item);
-          }
-        }, this);
-
-        if (overlowMenu[0] != null) {
-          var overflowMenuContainer    = document.createElement('paper-menu-button');
-          var overflowMenuButton       = document.createElement('paper-icon-button');
-          var overflowMenuList         = document.createElement('div');
-          overflowMenuContainer.style  = 'padding: 0;'
-          overflowMenuButton.icon      = 'more-vert';
-          overflowMenuButton.slot      = 'dropdown-trigger';
-          overflowMenuButton.alt       = 'menu align';
-          overflowMenuList.slot        = 'dropdown-content';
-          overflowMenuList.style       = 'position: fixed; top: 13px; right: 16px; box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2); border-radius: 3px; background-color: #fff;';
-          overflowMenuContainer.setAttribute('horizontal-align', 'right');
-          overflowMenuContainer.setAttribute('vertical-align', 'bottom');
-          overlowMenu.forEach(function(item) {
-            var menuItem       = document.createElement('paper-button');
-            var menuItemIcon   = document.createElement('iron-icon');
-            menuItem.innerHTML = item.name + " ";
-            menuItemIcon.icon  = item.icon;
-            menuItem.onclick   = function(){item.onclick(); overflowMenuContainer.close();}
-            menuItem.style     = "display: block; text-align: right; color: #000; font-size: 14px; font-weight: normal; margin: 0;"
-            menuItem.appendChild(menuItemIcon);
-            overflowMenuList.appendChild(menuItem);
-          }, this);
-          overflowMenuContainer.appendChild(overflowMenuButton);
-          overflowMenuContainer.appendChild(overflowMenuList);
-          this.$.actionMenu.appendChild(overflowMenuContainer);
-        }
-      }
-
       _showPage404() {
         this.page = 'error-404';
-      }
-
-      _showRenameDeck() {
-        document.dispatchEvent(new CustomEvent('show-rename-deck', {detail: {deckname: this.deckname}}));
-      }
-
-      _sortAllDecks() {
-        document.dispatchEvent(new CustomEvent('sort-all-decks'));
-      }
-
-      _showAddBulk() {
-        document.dispatchEvent(new CustomEvent('show-add-bulk'));
-      }
-
-      _downloadYDK() {
-        document.dispatchEvent(new CustomEvent('download-ydk', {detail: {deckname: this.deckname}}));
-      }
-
-      _clearAllDecks() {
-        document.dispatchEvent(new CustomEvent('clear-all-decks'));
-        document.dispatchEvent(new CustomEvent('rename-deck', {detail: {deckname: "Untitled"}}));
       }
 
       _blurBackground(e) {
         var overlay = this.$.overlay;
         var blurAttribute = 'opacity: 0.8; -webkit-filter: blur(2px); -moz-filter: blur(2px); -o-filter: blur(2px); -ms-filter: blur(2px); filter: blur(2px);';
         overlay.setAttribute('style', e.detail.blur ? blurAttribute: '');
-      }
-
-      _renameDeck(e) {
-        if (e.detail.deckname != null)
-          this.deckname = e.detail.deckname;
       }
     }
 
