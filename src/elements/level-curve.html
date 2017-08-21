@@ -1,0 +1,112 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../helpers/shared-styles.html">
+
+<dom-module id="level-curve">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+      }
+      .card {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 7.5px;
+        padding-right: 7.5px;
+      }
+      h3 {
+        margin: 10px 0px 0px 20px;
+      }
+    </style>
+
+    <div class="card">
+      <h3>Level Curve</h3>
+      <div id="curve"></div>
+    </div>
+  </template>
+
+  <script>
+    class LevelCurve extends Polymer.Element {
+      static get is() { return 'level-curve'; }
+      static get properties() {
+        return {
+          level: {
+            type: Array,
+            value: function() {return [0,0,0,0,0,0,0,0,0,0,0,0,0]}
+          }
+        };
+      }
+      ready() {
+        super.ready();
+        var reference = this;
+        var oldresize = window.onresize ? window.onresize.bind(this): function(){return;};
+        window.onresize = function() { oldresize(); reference.drawLevels();};
+        this.drawLevels();
+      }
+
+      addLevel(level) {
+        this.level[level]++;
+        this.drawLevels();
+      }
+
+      subLevel(level) {
+        this.level[level]--;
+        this.drawLevels();
+      }
+
+      drawLevels() {
+        var curve = this.$.curve;
+        var level = this.level;
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+          var data = new google.visualization.DataTable();
+          data.addColumn('number', 'Levels');
+          data.addColumn('number', 'Monsters');
+
+          data.addRows([
+            [0,  level[0]],
+            [1,  level[1]],
+            [2,  level[2]],
+            [3,  level[3]],
+            [4,  level[4]],
+            [5,  level[5]],
+            [6,  level[6]],
+            [7,  level[7]],
+            [8,  level[8]],
+            [9,  level[9]],
+            [10, level[10]],
+            [11, level[11]],
+            [12, level[12]],
+          ]);
+
+          var options = {
+            hAxis: {
+              title: 'Levels',
+              format: 'short',
+              maxValue: 13
+            },
+            vAxis: {
+              title: 'Monsters',
+              format: 'short',
+              minValue: 6
+            },
+            legend: {
+              position: 'none'
+            }
+          };
+
+          var chart = new google.visualization.LineChart(curve);
+
+          chart.draw(data, options);
+        }
+      }
+    }
+    window.customElements.define(LevelCurve.is, LevelCurve);
+  </script>
+</dom-module>

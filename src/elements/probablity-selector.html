@@ -1,0 +1,171 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../helpers/shared-styles.html">
+
+<dom-module id="probablity-selector">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 0px;
+        position: relative;
+      }
+      .card {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 7.5px;
+        padding-right: 7.5px;
+      }
+      h3 {
+        margin: 10px 0px 0px 20px;
+      }
+      p {
+        display: inline-block;
+        margin-top: calc(100% - 24px);
+        margin-bottom: 0;
+      }
+      .right {
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+      paper-dropdown-menu {
+        width: calc(100% - 50px);
+      }
+      .right {
+        height: 100%;
+        width: 50px;
+        text-align: right;
+      }
+    </style>
+
+    <paper-dropdown-menu label="[[title]]">
+      <paper-listbox id='deck' slot="dropdown-content" selected="{{selected}}" multi="[[multi]]"  selected-values="{{selectedValues}}">
+      </paper-listbox>
+    </paper-dropdown-menu>
+    <div class='right'>
+      <p>[[chance]]%</p>
+    </div>
+  </template>
+
+  <script>
+    class ProbablitySelector extends Polymer.Element {
+      static get is() { return 'probablity-selector'; }
+      static get properties() {
+        return {
+          chance: {
+            type: Number,
+            value: 0
+          },
+          count: {
+            type: Number,
+            value: 0,
+            observer: 'updateChance'
+          },
+          multi: {
+            type: Boolean,
+            value: false
+          },
+          selected: {
+            type: Number,
+            value: 0,
+            observer: 'updateChance'
+          },
+          selectedValues: {
+            type: Array,
+            value: function(){return[0]},
+            observer: 'updateChances'
+          },
+          title: {
+            type: String,
+            value: ''
+          }
+        };
+      }
+      ready(){
+        super.ready();
+      }
+
+      updateChances(vals, ignore) {
+        var chance = 1;
+        vals.forEach(function(val) {
+          if ([].slice.call(this.$.deck.children)[0]) {
+            if ([].slice.call(this.$.deck.children)[val] == null || this.count == null || this.count == 0) return;
+            chance *= this.round((([].slice.call(this.$.deck.children)[val].value / this.count) * 100), 2);
+          }
+        }, this);
+        this.chance = chance;
+      }
+
+      updateChance(val, ignore) {
+        if ([].slice.call(this.$.deck.children)[0]) {
+          if ([].slice.call(this.$.deck.children)[val] == null || this.count == null || this.count == 0) return;
+          this.chance = this.round((([].slice.call(this.$.deck.children)[val].value / this.count) * 100), 2);
+        }
+      }
+
+      round(value, exp) {
+        if (typeof exp === 'undefined' || +exp === 0)
+          return Math.round(value);
+
+        value = +value;
+        exp = +exp;
+
+        if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
+          return NaN;
+
+        // Shift
+        value = value.toString().split('e');
+        value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
+
+        // Shift back
+        value = value.toString().split('e');
+        return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
+      }
+
+      addCard (card) {
+        var newCard = true;
+        var deck  = this.$.deck;
+        [].slice.call(this.$.deck.children).forEach(function(item) {
+          if(card.name == item.id) {
+            item.value++;
+            newCard = false;
+          }
+        }, this);
+        if (newCard) {
+          var deck        = this.$.deck;
+          var item        = document.createElement('paper-item');
+          item.id         = card.name;
+          item.value      = 1;
+          item.innerHTML  = card.name;
+          deck.appendChild(item);
+        }
+      }
+
+      removeCard(card) {
+        var deck  = this.$.deck;
+        [].slice.call(this.$.deck.children).forEach(function(item) {
+          if(card.name == item.id) {
+            item.value--;
+            if (item.value == 0)
+              deck.removeChild(item);
+          }
+        }, this);
+      }
+
+      updateCount(count) {
+        this.count = count;
+      }
+    }
+    window.customElements.define(ProbablitySelector.is, ProbablitySelector);
+  </script>
+</dom-module>

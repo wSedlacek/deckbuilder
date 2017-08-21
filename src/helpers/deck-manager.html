@@ -60,6 +60,7 @@
           this.deck.push(card);
           document.dispatchEvent(new CustomEvent('update-count-for-' + this.id, {detail: {count: this.deck.length}}));
           document.dispatchEvent(new CustomEvent('draw-card-for-' + this.id, {detail: {card: card}}));
+          document.dispatchEvent(new CustomEvent('add-stats', {detail: {card: card}}));
         } else {
           document.dispatchEvent(new CustomEvent('card-limit', {detail: {card: card}}));
         }
@@ -86,6 +87,7 @@
         }
         this.deck.splice(itemToRemove, 1);
         document.dispatchEvent(new CustomEvent('update-count-for-' + this.id, {detail: {count: this.deck.length}}));
+        document.dispatchEvent(new CustomEvent('sub-stats', {detail: {card: e.detail.card}}));
       }
 
       clearCard(e) {

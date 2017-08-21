@@ -15,7 +15,6 @@
 <link rel="import" href="deck-editor.html">
 <link rel="import" href="deck-preview.html">
 <link rel="import" href="deck-stats.html">
-<link rel="import" href="deck-pricing.html">
 
 <link rel="lazy-import" href="card-search.html">
 <link rel="lazy-import" href="web-credits.html">
@@ -77,6 +76,10 @@
         top:0;
         left:0;
       }
+      #drawerMenu {
+        min-width: 40px;
+        min-height: 40px;
+      }
     </style>
     <div id="overlay">
       <app-location route="{{route}}" url-space-regex="^[[rootPath]]"></app-location>
@@ -94,7 +97,6 @@
             <a name="deck-editor" href="[[rootPath]]deck-editor">Editor</a>
             <a name="deck-preview" href="[[rootPath]]deck-preview">Preview</a>
             <a name="deck-stats" href="[[rootPath]]deck-stats">Statistics</a>
-            <a name="deck-pricing" href="[[rootPath]]deck-pricing">Pricing</a>
             <a name="card-search" href="[[rootPath]]card-search">Search</a>
             <a name="web-credits" href="[[rootPath]]web-credits">Credits</a>
           </iron-selector>
@@ -118,7 +120,6 @@
             <deck-editor name="deck-editor"></deck-editor>
             <deck-preview name="deck-preview"></deck-preview>
             <deck-stats name="deck-stats"></deck-stats>
-            <deck-pricing name="deck-pricing"></deck-pricing>
             <card-search name="card-search"></card-search>
             <web-credits name="web-credits"></web-credits>
             <error-404 name="error-404"></error-404>
@@ -171,6 +172,10 @@
         // If no page was found in the route data, page will be an empty string.
         // Deault to 'view1' in that case.
         this.page = page || 'deck-editor';
+
+        if (page == 'deck-stats') {
+          document.dispatchEvent(new CustomEvent('redraw-stats'));
+        }
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.$.drawer.persistent) {

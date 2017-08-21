@@ -97,7 +97,7 @@
       </div>
     </div>
     <div id="notfound">
-      <h1>Card Not Found</h1>
+      <h1 id="status">Searching...</h1>
     </div>
   </template>
 
@@ -126,6 +126,23 @@
             value: '.png'
           }
         };
+      }
+
+      ready() {
+        super.ready();
+        document.addEventListener('card-found', e => this.cardFound(e));
+        document.addEventListener('card-not-found', e => this.cardNotFound(e));
+      }
+
+      cardFound(e) {
+        this.$.body.style = '';
+        this.$.notfound.style = 'display: none;';
+      }
+
+      cardNotFound(e) {
+        this.$.body.style = 'display: none;';
+        this.$.notfound.style = '';
+        this.$.status.innerHTML = 'CARD NOT FOUND';
       }
 
       displayHeader(header) {

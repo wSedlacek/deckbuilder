@@ -159,6 +159,7 @@
       _submit(e) {
         var lines = this.cardsToAdd.trim().split('\n');
         this.hide(e);
+        if (lines.length == 1 && lines[0].trim() == '') return;
         document.dispatchEvent(new CustomEvent('show-processing-data'));
         if (this.deckName != "")
           document.dispatchEvent(new CustomEvent('rename-deck', {detail: {deckname: this.deckName}}));

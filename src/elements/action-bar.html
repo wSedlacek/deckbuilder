@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 
@@ -7,6 +8,7 @@
     <style>
       :host {
         flex: var(--layout-flex_-_flex);
+        width: 90vw;
       }
       div {
         padding: 0;
@@ -34,11 +36,25 @@
                   overflowPiority: 1
                 },
                 {
+                  name: 'QR Code',
+                  icon: 'image:filter-center-focus',
+                  onclick: this._showQR,
+                  beforeName: false,
+                  overflowPiority: 1
+                },
+                {
+                  name: 'Pricing',
+                  icon: 'shopping-cart',
+                  onclick: this._showPricing,
+                  beforeName: false,
+                  overflowPiority: 1
+                },
+                {
                   name: 'Sort Deck',
                   icon: 'sort',
                   onclick: this._sortAllDecks,
                   beforeName: false,
-                  overflowPiority: 1
+                  overflowPiority: 2
                 },
                 {
                   name: 'Add Cards',
@@ -72,14 +88,14 @@
         };
       }
 
-      ready() {
+      ready(reference = this) {
         super.ready();
-        var reference = this;
-        window.onresize = function() {reference._populateActionMenu();};
+        var oldresize = window.onresize ? window.onresize.bind(this): function(){return;};
+        window.onresize = function() { oldresize(); reference._populateActionMenu(null, null, reference);};
         document.addEventListener('rename-deck', e => this._renameDeck(e));
       }
 
-      _populateActionMenu() {
+      _populateActionMenu(ignoreN, ignoreO, reference = this) {
         if (this.menuItems == null) return;
 
         while (this.$.actionMenu.childNodes.length > 1) {
@@ -90,7 +106,7 @@
         || document.documentElement.clientWidth
         || document.body.clientWidth;
         var overflow = 0;
-        while (width < 800) {
+        while (width < 920) {
           width+=180;
           overflow++;
         }
@@ -102,18 +118,19 @@
           if (!item.beforeName && isBeforeName) {
             var name = document.createElement('div');
             name.setAttribute('main-title', '');
-            name.style = 'display: inline-block; height: 40px; line-height: 40px; vertical-align: middle;';
+            var num = (this.menuItems.length * 40) - (50 * overflow);
+            name.style = 'display: inline-block; height: 40px; line-height: 40px; vertical-align: middle; width: calc(100% - '+num+'px); overflow: hidden; text-overflow: ellipsis;';
             name.innerHTML = this.deckname;
             this.$.actionMenu.appendChild(name);
             buttonContainer = document.createElement('div');
-            buttonContainer.style = 'float: right;';
+            buttonContainer.style = 'float: right; position: absolute; top: 10px; right: 5px;';
             this.$.actionMenu.appendChild(buttonContainer);
             isBeforeName = false;
           }
           if (item.overflowPiority > overflow) {
             var menuItem     = document.createElement('paper-icon-button');
             menuItem.icon    = item.icon;
-            menuItem.onclick = item.onclick;
+            menuItem.onclick = function(){item.onclick(reference);}
             buttonContainer.appendChild(menuItem);
           } else {
             overlowMenu.push(item);
@@ -137,7 +154,7 @@
             var menuItemIcon   = document.createElement('iron-icon');
             menuItem.innerHTML = item.name + " ";
             menuItemIcon.icon  = item.icon;
-            menuItem.onclick   = function(){item.onclick(); overflowMenuContainer.close();}
+            menuItem.onclick   = function(){item.onclick(reference); overflowMenuContainer.close();}
             menuItem.style     = "display: block; text-align: right; color: #000; font-size: 14px; font-weight: normal; margin: 0;"
             menuItem.appendChild(menuItemIcon);
             overflowMenuList.appendChild(menuItem);
@@ -148,8 +165,16 @@
         }
       }
 
-      _showRenameDeck() {
-        document.dispatchEvent(new CustomEvent('show-rename-deck', {detail: {deckname: this.deckname}}));
+      _showRenameDeck(refenece = this) {
+        document.dispatchEvent(new CustomEvent('show-rename-deck', {detail: {deckname: refenece.deckname}}));
+      }
+
+      _showQR() {
+        document.dispatchEvent(new CustomEvent('show-qr'));
+      }
+
+      _showPricing() {
+        document.dispatchEvent(new CustomEvent('show-pricing'));
       }
 
       _sortAllDecks() {
@@ -160,8 +185,8 @@
         document.dispatchEvent(new CustomEvent('show-add-bulk'));
       }
 
-      _downloadYDK() {
-        document.dispatchEvent(new CustomEvent('download-ydk', {detail: {deckname: this.deckname}}));
+      _downloadYDK(refenece = this) {
+        document.dispatchEvent(new CustomEvent('download-ydk', {detail: {deckname: refenece.deckname}}));
       }
 
       _clearAllDecks() {

@@ -81,6 +81,8 @@
         var reference = this;
         this.header = e.detail.card.name + " [" + e.detail.card.ids[0] + "]";
         if (this.$.info.card == e.detail.card) {
+          this.$.info.card = {name:null};
+          this.$.info.card = e.detail.card;
           reference.opened = true;
         } else {
           this.$.info.card = e.detail.card;

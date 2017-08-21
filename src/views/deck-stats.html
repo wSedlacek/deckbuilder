@@ -1,6 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../elements/level-curve.html">
+<link rel="import" href="../elements/card-probablity.html">
+
 <link rel="import" href="../helpers/shared-styles.html">
-<link rel="import" href="../elements/credit-entry.html">
+
 
 <dom-module id="deck-stats">
   <template>
@@ -10,11 +13,46 @@
         padding: 10px;
       }
     </style>
+    <level-curve id="levels"></level-curve>
+    <type-graph id="type"></type-graph>
+    <card-probablity id="probablity"></card-probablity>
   </template>
 
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script>
     class DeckStats extends Polymer.Element {
       static get is() { return 'deck-stats'; }
+      ready(){
+        super.ready();
+        document.addEventListener('add-stats', e => this.addStats(e));
+        document.addEventListener('sub-stats', e => this.subStats(e));
+        document.addEventListener('update-count-for-main', e => this.updateCounts(e));
+        document.addEventListener('redraw-stats', e => this.redraw(e));
+      }
+
+      addStats(e) {
+        if (e.detail.card.deck == "main") {
+          if (e.detail.card.allTypes[0] == "Monster")
+            this.$.levels.addLevel(e.detail.card.level);
+          this.$.probablity.addCard(e.detail.card);
+        }
+      }
+
+      subStats(e) {
+        if (e.detail.card.deck == "main") {
+          if (e.detail.card.allTypes[0] == "Monster")
+            this.$.levels.subLevel(e.detail.card.level);
+          this.$.probablity.removeCard(e.detail.card);
+        }
+      }
+
+      updateCounts(e) {
+        this.$.probablity.updateCount(e.detail.count);
+      }
+
+      redraw(e) {
+        this.$.levels.drawLevels();
+      }
     }
 
     window.customElements.define(DeckStats.is, DeckStats);
